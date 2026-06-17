@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Chef Nutri-Kid — Pay & Activate</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#FFFDF0;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px}
+.ribbon{position:fixed;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#FF6B6B,#FFD93D,#4ECDC4);z-index:10}
+.card{background:#fff;border-radius:28px;border:2px solid #FFD966;padding:36px 32px;max-width:440px;width:100%;margin-top:28px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.09)}
+.logo{width:60px;height:60px;background:#FF6B6B;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 14px}
+h1{font-size:22px;font-weight:900;color:#4A4A4A;margin-bottom:4px}
+.sub{font-size:13px;color:#888;margin-bottom:24px}
+.plan-tabs{display:flex;gap:8px;margin-bottom:24px;justify-content:center;flex-wrap:wrap}
+.plan-tab{padding:8px 16px;border:2px solid #e0e0e0;border-radius:999px;font-size:12px;font-weight:800;cursor:pointer;transition:.2s;background:#fff;color:#666}
+.plan-tab.active{border-color:#FF6B6B;background:#FFF0F0;color:#FF6B6B}
+.amount-box{background:#FFF8F0;border:2px solid #FFD93D;border-radius:18px;padding:14px 20px;margin-bottom:20px}
+.amount-label{font-size:11px;font-weight:800;color:#A35D36;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.amount-value{font-size:34px;font-weight:900;color:#FF6B6B}
+.amount-note{font-size:11px;color:#888;margin-top:2px}
+.qr-wrap{background:#fff;border:3px solid #FFD93D;border-radius:20px;padding:16px;display:inline-block;margin-bottom:18px;position:relative}
+.qr-wrap img{width:200px;height:200px;display:block;border-radius:8px}
+.qr-badge{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);background:#FF6B6B;color:#fff;padding:4px 14px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}
+.upi-id{background:#F0FFFE;border:2px solid #4ECDC4;border-radius:14px;padding:12px 18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.upi-label{font-size:11px;font-weight:800;color:#0F6E56;text-transform:uppercase;letter-spacing:.5px}
+.upi-val{font-size:16px;font-weight:900;color:#0F6E56;font-family:monospace}
+.copy-btn{background:#4ECDC4;border:none;color:#fff;padding:7px 14px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;transition:.2s;flex-shrink:0}
+.copy-btn:hover{background:#3ab8b0}
+.steps{text-align:left;background:#F8F8F8;border-radius:16px;padding:18px 20px;margin-bottom:20px}
+.steps h3{font-size:12px;font-weight:800;color:#4A4A4A;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.step{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.step:last-child{margin-bottom:0}
+.step-num{width:22px;height:22px;background:#FF6B6B;color:#fff;border-radius:50%;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-text{font-size:13px;color:#555;line-height:1.4}
+.step-text b{color:#4A4A4A}
+.wa-btn{display:block;width:100%;padding:14px;background:#25D366;color:#fff;border:none;border-radius:14px;font-weight:900;font-size:15px;cursor:pointer;text-decoration:none;transition:.2s;margin-bottom:10px}
+.wa-btn:hover{background:#1ebe5d;transform:translateY(-1px)}
+.note{font-size:11px;color:#aaa;line-height:1.5;margin-top:8px}
+.copied{display:none;color:#0F6E56;font-size:12px;font-weight:700;margin-top:4px}
+.apps-row{display:flex;gap:8px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
+.app-pill{padding:6px 12px;background:#f5f5f5;border-radius:999px;font-size:11px;font-weight:700;color:#555}
+</style>
+</head>
+<body>
+<div class="ribbon"></div>
+
+<div class="card">
+  <div class="logo">👨‍🍳</div>
+  <h1>Complete Your Payment</h1>
+  <p class="sub">Scan QR or copy UPI ID — activate within 24 hrs 🌟</p>
+
+  <!-- Plan selector -->
+  <div class="plan-tabs">
+    <div class="plan-tab active" onclick="selectPlan(this,'299','Starter — 1 week')">🌱 Starter ₹299</div>
+    <div class="plan-tab" onclick="selectPlan(this,'999','Family — 1 month')">👨‍👩‍👧 Family ₹999</div>
+    <div class="plan-tab" onclick="selectPlan(this,'2499','Premium — 1 month')">⭐ Premium ₹2,499</div>
+  </div>
+
+  <!-- Amount -->
+  <div class="amount-box">
+    <div class="amount-label">Amount to Pay</div>
+    <div class="amount-value" id="amtDisplay">₹299</div>
+    <div class="amount-note" id="planNote">Starter Plan — 1 week</div>
+  </div>
+
+  <!-- QR Code -->
+  <div class="qr-wrap">
+    <img src="data:image/png;base64,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" alt="UPI QR Code for Chef Nutri-Kid"/>
+    <div class="qr-badge">Scan to Pay 📱</div>
+  </div>
+
+  <!-- Apps -->
+  <div class="apps-row">
+    <div class="app-pill">📱 GPay</div>
+    <div class="app-pill">📱 PhonePe</div>
+    <div class="app-pill">📱 Paytm</div>
+    <div class="app-pill">📱 BHIM</div>
+    <div class="app-pill">📱 Any UPI</div>
+  </div>
+
+  <!-- UPI ID copy -->
+  <div class="upi-id">
+    <div>
+      <div class="upi-label">UPI ID</div>
+      <div class="upi-val">7990878248@ybl</div>
+    </div>
+    <button class="copy-btn" onclick="copyUPI()">Copy</button>
+  </div>
+  <div class="copied" id="copiedMsg">✅ Copied to clipboard!</div>
+
+  <!-- Steps -->
+  <!-- Coupon & Refer Section -->
+  <div style="background:#FFF8F0;border:2px solid #FFD93D;border-radius:14px;padding:14px 16px;margin-bottom:16px">
+    <div style="font-size:13px;font-weight:800;color:#A35D36;margin-bottom:8px">🎟️ Apply Coupon / Referral Code</div>
+    <div style="display:flex;gap:8px;margin-bottom:6px">
+      <input type="text" id="couponInput" placeholder="Enter coupon code" style="flex:1;padding:9px 12px;border:2px solid #FFD93D;border-radius:10px;font-size:13px;outline:none;text-transform:uppercase"/>
+      <button onclick="applyCoupon()" style="background:#FF6B6B;color:#fff;border:none;padding:9px 14px;border-radius:10px;font-weight:800;font-size:12px;cursor:pointer">Apply</button>
+    </div>
+    <div id="couponMsg" style="font-size:12px;font-weight:700;display:none"></div>
+    <div style="font-size:11px;color:#888;margin-top:6px">🎁 Refer a friend → Both get ₹50 off! Ask us for your referral code on WhatsApp.</div>
+  </div>
+
+  <div class="steps">
+    <h3>How to pay & activate</h3>
+    <div class="step"><div class="step-num">1</div><div class="step-text">Apply any coupon code above for discount 🎟️</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-text">Scan the QR with <b>GPay / PhonePe / Paytm / BHIM</b> or copy the UPI ID</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-text">Enter the amount <b id="stepAmt">₹299</b> and complete the payment</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-text">Take a screenshot of the <b>payment confirmation</b></div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-text">Send screenshot on WhatsApp — we'll send your <b>activation code within 2 hours</b> 🎉</div></div>
+  </div>
+
+  <!-- WhatsApp button -->
+  <a class="wa-btn" id="waLink" href="https://wa.me/917990878248?text=Hi%21+I%27ve+paid+%E2%82%B9299+for+the+Chef+Nutri-Kid+Starter+Plan.+Please+find+my+payment+screenshot+attached.+%F0%9F%8C%9F" target="_blank">
+    📲 Send Payment Screenshot on WhatsApp
+  </a>
+
+  <p class="note">🔒 After confirming payment, you'll receive a unique activation code on WhatsApp. Enter it in the app to unlock all premium features instantly.</p>
+</div>
+
+<script>
+const plans = {
+  '299':  { label: 'Starter — 1 week',   wa: 'Hi! I have paid ₹299 for Chef Nutri-Kid Starter Plan. Please find my payment screenshot. 🌟' },
+  '999':  { label: 'Family — 1 month',   wa: 'Hi! I have paid ₹999 for Chef Nutri-Kid Family Plan. Please find my payment screenshot. 🌟' },
+  '2499': { label: 'Premium — 1 month',  wa: 'Hi! I have paid ₹2499 for Chef Nutri-Kid Premium Plan. Please find my payment screenshot. 🌟' },
+};
+
+let discountAmt = 0;
+let baseAmt = 299;
+
+function applyCoupon() {
+  const code = document.getElementById('couponInput').value.trim().toUpperCase();
+  const msg = document.getElementById('couponMsg');
+  if (!code) { msg.style.display='block'; msg.style.color='#dc2626'; msg.textContent='Please enter a coupon code!'; return; }
+  // Simple coupon check — admin can share these
+  const COUPONS = { 'WELCOME10': 10, 'SAVE20': 20, 'REFER50': 50, 'NUTRI10': 10, 'FIRST15': 15 };
+  if (COUPONS[code]) {
+    discountAmt = COUPONS[code];
+    const finalAmt = Math.max(baseAmt - discountAmt, 0);
+    document.getElementById('amtDisplay').textContent = '₹' + finalAmt.toLocaleString('en-IN');
+    document.getElementById('stepAmt').textContent = '₹' + finalAmt.toLocaleString('en-IN');
+    msg.style.display='block'; msg.style.color='#166534';
+    msg.textContent = '✅ Coupon applied! ₹' + discountAmt + ' discount. Pay ₹' + finalAmt;
+  } else {
+    msg.style.display='block'; msg.style.color='#dc2626';
+    msg.textContent = '❌ Invalid coupon. Please check the code or contact us on WhatsApp.';
+  }
+}
+
+function selectPlan(el, amt, label) {
+  document.querySelectorAll('.plan-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  baseAmt = parseInt(amt); discountAmt = 0;
+  document.getElementById('amtDisplay').textContent = '₹' + Number(amt).toLocaleString('en-IN');
+  document.getElementById('planNote').textContent = plans[amt].label;
+  document.getElementById('stepAmt').textContent = '₹' + Number(amt).toLocaleString('en-IN');
+  document.getElementById('waLink').href = 'https://wa.me/917990878248?text=' + encodeURIComponent(plans[amt].wa);
+  // Reset coupon
+  const msg = document.getElementById('couponMsg');
+  if(msg) msg.style.display='none';
+  const ci = document.getElementById('couponInput');
+  if(ci) ci.value='';
+}
+
+function copyUPI() {
+  navigator.clipboard.writeText('7990878248@ybl').then(() => {
+    const msg = document.getElementById('copiedMsg');
+    msg.style.display = 'block';
+    setTimeout(() => msg.style.display = 'none', 2500);
+  });
+}
+</script>
+</body>
+</html>

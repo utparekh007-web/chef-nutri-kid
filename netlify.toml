@@ -1,0 +1,38 @@
+[build]
+  command = "npm run build && cp src/admin.html dist/admin.html && cp public/plans.html dist/plans.html && cp public/payment.html dist/payment.html && cp public/upi-qr.png dist/upi-qr.png"
+  publish = "dist"
+
+[functions]
+  node_bundler = "esbuild"
+
+# API redirect — MUST be first
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+# Static HTML pages — serve directly, NOT through React
+[[redirects]]
+  from = "/admin.html"
+  to = "/admin.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/plans.html"
+  to = "/plans.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/payment.html"
+  to = "/payment.html"
+  status = 200
+  force = true
+
+# React SPA fallback — MUST be last
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

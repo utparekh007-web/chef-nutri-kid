@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Chef Nutri-Kid — Plans, Recipes & Kids Features</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#FFFDF0;color:#4A4A4A}
+:root{--coral:#FF6B6B;--teal:#4ECDC4;--gold:#FFD93D;--dark:#4A4A4A}
+.ribbon{height:4px;background:linear-gradient(90deg,#FF6B6B,#FFD93D,#4ECDC4)}
+nav{background:#fff;border-bottom:2px solid #FFD966;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:10px}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-logo{width:42px;height:42px;background:#FF6B6B;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.nav-title{font-size:17px;font-weight:900;color:#4A4A4A}
+.nav-sub{font-size:10px;font-weight:700;color:#FF6B6B}
+.btn-primary{background:#FF6B6B;color:#fff;border:none;padding:10px 18px;border-radius:12px;font-weight:800;font-size:13px;cursor:pointer;text-decoration:none;display:inline-block}
+.btn-primary:hover{background:#e05555}
+
+/* PAGE TABS */
+.page-tabs{display:flex;gap:0;background:#fff;border-bottom:2px solid #FFD93D;overflow-x:auto}
+.page-tab{padding:14px 20px;font-weight:800;font-size:13px;cursor:pointer;border:none;background:transparent;color:#888;white-space:nowrap;border-bottom:3px solid transparent;transition:.2s}
+.page-tab.active{color:#FF6B6B;border-bottom-color:#FF6B6B}
+.page-section{display:none;padding:24px 16px;max-width:1100px;margin:0 auto}
+.page-section.active{display:block}
+
+/* HERO */
+.hero{text-align:center;padding:48px 16px 36px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:#FFE8D6;color:#A35D36;padding:5px 14px;border-radius:999px;font-size:11px;font-weight:800;text-transform:uppercase;margin-bottom:16px}
+.hero h1{font-size:clamp(28px,5vw,46px);font-weight:900;line-height:1.1;margin-bottom:12px}
+.hero h1 span{color:#FF6B6B}
+.hero p{font-size:16px;color:#666;line-height:1.6;margin-bottom:28px;max-width:560px;margin-left:auto;margin-right:auto}
+.hero-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn-hero{padding:13px 24px;border-radius:14px;font-weight:800;font-size:14px;cursor:pointer;border:none;transition:.2s;text-decoration:none;display:inline-block}
+.btn-hero:hover{transform:translateY(-2px)}
+.btn-coral{background:#FF6B6B;color:#fff}
+.btn-white{background:#fff;color:#4A4A4A;border:2px solid #e0e0e0}
+
+/* STATS */
+.stats{display:flex;background:#fff;border-top:2px solid #FFD966;border-bottom:2px solid #FFD966}
+.stat{flex:1;padding:18px;text-align:center;border-right:1px solid #f0e8c0;min-width:80px}
+.stat:last-child{border-right:none}
+.stat-num{font-size:22px;font-weight:900;color:#FF6B6B}
+.stat-label{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+
+/* SECTION HEADERS */
+.sec-tag{font-size:11px;font-weight:800;color:#4ECDC4;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.sec-title{font-size:clamp(22px,4vw,32px);font-weight:900;color:#4A4A4A;margin-bottom:8px}
+.sec-sub{font-size:15px;color:#666;margin-bottom:32px}
+
+/* PLANS */
+.plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
+.plan-card{background:#fff;border-radius:20px;padding:24px;border:2px solid #f0f0f0;position:relative;transition:.2s}
+.plan-card:hover{transform:translateY(-4px);box-shadow:0 12px 36px rgba(0,0,0,0.1)}
+.plan-card.featured{border-color:#FF6B6B;background:#FFF8F8}
+.plan-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:#FF6B6B;color:#fff;padding:3px 14px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}
+.plan-icon{font-size:32px;margin-bottom:10px}
+.plan-name{font-size:17px;font-weight:900;margin-bottom:3px}
+.plan-price{font-size:28px;font-weight:900;color:#FF6B6B;margin-bottom:3px}
+.plan-price span{font-size:13px;font-weight:600;color:#888}
+.plan-desc{font-size:12px;color:#666;margin-bottom:16px;line-height:1.5}
+.plan-features{list-style:none;margin-bottom:20px}
+.plan-features li{font-size:12px;color:#555;padding:4px 0;display:flex;align-items:flex-start;gap:7px;line-height:1.4}
+.plan-features li::before{content:"✓";color:#4ECDC4;font-weight:900;font-size:13px;flex-shrink:0}
+.plan-features li.lock{opacity:.45}
+.plan-features li.lock::before{content:"🔒"}
+.btn-plan{width:100%;padding:11px;border-radius:12px;font-weight:800;font-size:13px;cursor:pointer;border:none;transition:.2s}
+.btn-plan:hover{transform:scale(1.02)}
+.btn-coral-plan{background:#FF6B6B;color:#fff}
+.btn-out-plan{background:transparent;border:2px solid #e0e0e0;color:#4A4A4A}
+
+/* FEATURES GRID */
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
+.feat-card{background:#fff;border-radius:16px;padding:20px;border:2px solid #f5f5f5;transition:.2s}
+.feat-card:hover{border-color:#FFD93D;transform:translateY(-2px)}
+.feat-icon{font-size:28px;margin-bottom:10px}
+.feat-title{font-size:14px;font-weight:800;color:#4A4A4A;margin-bottom:5px}
+.feat-desc{font-size:12px;color:#666;line-height:1.5}
+
+/* RECIPES */
+.recipes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.recipe-card{background:#fff;border-radius:18px;overflow:hidden;border:2px solid #f0f0f0;transition:.2s}
+.recipe-card:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,0.09)}
+.recipe-img{background:linear-gradient(135deg,#FF6B6B22,#FFD93D22);padding:20px;text-align:center;font-size:52px}
+.recipe-body{padding:16px}
+.recipe-tag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:10px;font-weight:800;margin-bottom:8px}
+.tag-veg{background:#dcfce7;color:#166534}
+.tag-nonveg{background:#fee2e2;color:#991b1b}
+.tag-egg{background:#fef9c3;color:#854d0e}
+.recipe-name{font-size:15px;font-weight:900;color:#4A4A4A;margin-bottom:6px}
+.recipe-desc{font-size:12px;color:#666;line-height:1.5;margin-bottom:10px}
+.recipe-meta{display:flex;gap:10px;font-size:11px;color:#888;margin-bottom:12px;flex-wrap:wrap}
+.recipe-meta span{display:flex;align-items:center;gap:3px;font-weight:600}
+.recipe-plate{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.plate-pill{padding:3px 8px;border-radius:999px;font-size:10px;font-weight:700}
+.pp-veg{background:#dcfce7;color:#166534}
+.pp-grain{background:#fef9c3;color:#854d0e}
+.pp-protein{background:#dbeafe;color:#1e40af}
+.btn-yt{display:flex;align-items:center;gap:6px;background:#FF0000;color:#fff;border:none;padding:8px 14px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer;text-decoration:none;width:100%;justify-content:center}
+.btn-yt:hover{background:#cc0000}
+
+/* VIDEOS */
+.videos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.video-card{background:#fff;border-radius:16px;overflow:hidden;border:2px solid #f0f0f0;transition:.2s}
+.video-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.09)}
+.video-thumb{position:relative;background:#000;cursor:pointer}
+.video-thumb img{width:100%;height:160px;object-fit:cover;display:block;opacity:.85}
+.video-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:50px;height:50px;background:#FF0000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff}
+.video-body{padding:14px}
+.video-title{font-size:13px;font-weight:800;color:#4A4A4A;margin-bottom:5px;line-height:1.4}
+.video-meta{font-size:11px;color:#888;margin-bottom:10px}
+.video-tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;background:#FFE8D6;color:#A35D36;margin-bottom:8px}
+.btn-watch{display:block;text-align:center;background:#FF0000;color:#fff;padding:8px;border-radius:10px;font-size:12px;font-weight:800;text-decoration:none;transition:.2s}
+.btn-watch:hover{background:#cc0000}
+
+/* KIDS FEATURES */
+.kids-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.kids-card{background:#fff;border-radius:18px;padding:22px;border:2px solid #f0f0f0;text-align:center;transition:.2s}
+.kids-card:hover{transform:translateY(-3px);border-color:#FFD93D}
+.kids-icon{font-size:44px;margin-bottom:12px}
+.kids-title{font-size:15px;font-weight:900;color:#4A4A4A;margin-bottom:6px}
+.kids-desc{font-size:12px;color:#666;line-height:1.6}
+.kids-badge{display:inline-block;margin-top:10px;padding:3px 10px;border-radius:999px;font-size:10px;font-weight:800}
+.kb-free{background:#dcfce7;color:#166534}
+.kb-pro{background:#FFE8D6;color:#A35D36}
+
+/* FORM */
+.form-wrap{background:linear-gradient(135deg,#FFF8F8,#F0FFFE);border-radius:24px;padding:36px 28px;border:2px solid #FFD966;max-width:600px;margin:0 auto}
+.form-title{font-size:22px;font-weight:900;color:#4A4A4A;margin-bottom:4px}
+.form-sub{font-size:13px;color:#666;margin-bottom:24px}
+.plan-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.plan-pill{padding:8px 14px;border:2px solid #e0e0e0;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;transition:.2s;background:#fff}
+.plan-pill.active{border-color:#FF6B6B;background:#FFF0F0;color:#FF6B6B}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;font-weight:700;color:#4A4A4A;margin-bottom:5px;display:block}
+.form-input{width:100%;padding:11px 14px;border:2px solid #e8e8e8;border-radius:12px;font-size:14px;font-family:inherit;outline:none;transition:.2s;background:#fff}
+.form-input:focus{border-color:#FF6B6B}
+.btn-submit{width:100%;padding:15px;background:#FF6B6B;color:#fff;border:none;border-radius:14px;font-weight:900;font-size:15px;cursor:pointer;transition:.2s;margin-top:6px}
+.btn-submit:hover{background:#e05555;transform:translateY(-1px)}
+.form-note{font-size:11px;color:#888;text-align:center;margin-top:10px}
+.success-msg{display:none;background:#E8FFF5;border:2px solid #4ECDC4;border-radius:14px;padding:20px;text-align:center;margin-top:14px}
+.success-msg.show{display:block}
+
+/* CHAT */
+.chat-fab{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.chat-bubble{background:#4A4A4A;color:#fff;padding:10px 14px;border-radius:14px 14px 4px 14px;font-size:12px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.2);max-width:200px;text-align:center;display:none}
+.chat-bubble.show{display:block}
+.chat-btn{width:56px;height:56px;background:#FF6B6B;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 6px 20px rgba(255,107,107,.4);transition:.2s}
+.chat-btn:hover{transform:scale(1.1)}
+.chat-window{position:fixed;bottom:96px;right:24px;width:350px;max-width:calc(100vw - 40px);height:510px;background:#fff;border-radius:20px;box-shadow:0 16px 60px rgba(0,0,0,.18);display:none;flex-direction:column;z-index:998;border:2px solid #FFD966;overflow:hidden}
+.chat-window.open{display:flex}
+.chat-header{background:#FF6B6B;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px}
+.chat-avatar{width:36px;height:36px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.chat-header-name{font-weight:900;font-size:14px}
+.chat-header-status{font-size:10px;opacity:.85}
+.chat-close{background:rgba(255,255,255,.2);border:none;color:#fff;width:26px;height:26px;border-radius:7px;cursor:pointer;font-size:15px;margin-left:auto}
+.chat-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px;background:#FFFDF0}
+.msg{max-width:82%;padding:9px 13px;border-radius:16px;font-size:13px;line-height:1.5}
+.msg-bot{background:#fff;border:1.5px solid #f0e8c0;border-radius:4px 16px 16px 16px;align-self:flex-start}
+.msg-user{background:#FF6B6B;color:#fff;border-radius:16px 4px 16px 16px;align-self:flex-end}
+.msg-typing{background:#fff;border:1.5px solid #f0e8c0;border-radius:4px 16px 16px 16px;padding:12px 16px;align-self:flex-start}
+.typing-dot{width:7px;height:7px;background:#ccc;border-radius:50%;animation:tp 1.2s ease-in-out infinite;display:inline-block;margin:0 1px}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes tp{0%,80%,100%{transform:scale(.8);background:#ccc}40%{transform:scale(1);background:#FF6B6B}}
+.chat-quick{padding:8px 14px;display:flex;gap:5px;flex-wrap:wrap;background:#fff;border-top:1px solid #f5f5f5}
+.quick-btn{padding:5px 10px;border:1.5px solid #FFD966;border-radius:999px;font-size:10px;font-weight:700;cursor:pointer;background:#FFFDF0;color:#A35D36;white-space:nowrap;transition:.15s}
+.quick-btn:hover{background:#FFD966}
+.chat-input-row{padding:10px 14px;background:#fff;border-top:1px solid #f5f5f5;display:flex;gap:7px}
+.chat-input{flex:1;padding:9px 13px;border:1.5px solid #e0e0e0;border-radius:12px;font-size:13px;font-family:inherit;outline:none;transition:.2s}
+.chat-input:focus{border-color:#FF6B6B}
+.chat-send{background:#FF6B6B;border:none;color:#fff;width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+footer{background:#4A4A4A;color:#ccc;text-align:center;padding:20px;font-size:11px;font-weight:600}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}.stats{flex-wrap:wrap}.stat{min-width:50%}.chat-window{right:12px;left:12px;width:auto}}
+</style>
+</head>
+<body>
+<div class="ribbon"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">👨‍🍳</div>
+    <div><div class="nav-title">CHEF NUTRI-KID</div><div class="nav-sub">Powered by NutriPeds AI 🌟</div></div>
+  </div>
+  <a href="/" class="btn-primary">🍎 Open Free App</a>
+</nav>
+
+<!-- PAGE TABS -->
+<div class="page-tabs">
+  <button class="page-tab active" onclick="showTab('plans')">💼 Plans</button>
+  <button class="page-tab" onclick="showTab('recipes')">🍽️ Recipes</button>
+  <button class="page-tab" onclick="showTab('videos')">▶️ Videos</button>
+  <button class="page-tab" onclick="showTab('kids')">🧒 Kids Features</button>
+  <button class="page-tab" onclick="showTab('register')">📋 Register</button>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- PLANS TAB -->
+<!-- ══════════════════════════════════════ -->
+<div id="tab-plans" class="page-section active">
+  <div class="hero">
+    <div class="hero-badge">🎉 Now accepting prepaid plans</div>
+    <h1>Give Your Child the<br/><span>Healthiest Start</span> in Life</h1>
+    <p>AI-powered personalized meal plans for children aged 2–12, based on the Harvard Kids' Healthy Eating Plate.</p>
+    <div class="hero-btns">
+      <button class="btn-hero btn-coral" onclick="showTab('register')">🥗 Get a Plan</button>
+      <button class="btn-hero btn-white" onclick="showTab('recipes')">🍽️ Browse Recipes</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-num">2–12</div><div class="stat-label">Age Range</div></div>
+    <div class="stat"><div class="stat-num">Harvard</div><div class="stat-label">Plate Model</div></div>
+    <div class="stat"><div class="stat-num">24hrs</div><div class="stat-label">Delivery</div></div>
+    <div class="stat"><div class="stat-num">300+</div><div class="stat-label">Ingredients</div></div>
+    <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Allergy-Safe</div></div>
+  </div>
+
+  <div style="padding:40px 16px;max-width:1100px;margin:0 auto">
+    <div class="sec-tag">Pricing</div>
+    <div class="sec-title">Simple, Honest Pricing 💚</div>
+    <div class="sec-sub">Start free. Upgrade anytime. No hidden charges.</div>
+
+    <div class="plans-grid">
+      <div class="plan-card">
+        <div class="plan-icon">🎁</div>
+        <div class="plan-name">Free Trial</div>
+        <div class="plan-price">₹0 <span>/one time</span></div>
+        <div class="plan-desc">Try Chef Nutri-Kid with zero commitment</div>
+        <ul class="plan-features">
+          <li>1 free recipe generation</li>
+          <li>Harvard Plate preview</li>
+          <li>300+ ingredient search</li>
+          <li class="lock">Child profiles</li>
+          <li class="lock">Weekly planner</li>
+          <li class="lock">Health reports</li>
+          <li class="lock">YouTube recipe videos</li>
+        </ul>
+        <a href="/"><button class="btn-plan btn-out-plan">Try Free App →</button></a>
+      </div>
+
+      <div class="plan-card featured">
+        <div class="plan-badge">⭐ Most Popular</div>
+        <div class="plan-icon">🥗</div>
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">₹299 <span>/week</span></div>
+        <div class="plan-desc">Perfect for families starting their nutrition journey</div>
+        <ul class="plan-features">
+          <li>Unlimited recipe generation</li>
+          <li>Weekly meal plan PDF on WhatsApp</li>
+          <li>1 child profile</li>
+          <li>Allergy customization</li>
+          <li>Shopping list included</li>
+          <li>YouTube recipe video links</li>
+          <li>Junior Chef activity tasks</li>
+        </ul>
+        <button class="btn-plan btn-coral-plan" onclick="selectAndRegister('Starter ₹299/week')">Get Starter Plan →</button>
+      </div>
+
+      <div class="plan-card">
+        <div class="plan-icon">👨‍👩‍👧</div>
+        <div class="plan-name">Family</div>
+        <div class="plan-price">₹999 <span>/month</span></div>
+        <div class="plan-desc">For growing families with multiple children</div>
+        <ul class="plan-features">
+          <li>4 weekly plans/month</li>
+          <li>Up to 3 child profiles</li>
+          <li>WhatsApp support</li>
+          <li>Allergy customization</li>
+          <li>Printable PDF export</li>
+          <li>Age-specific AI plans</li>
+          <li>YouTube recipe video links</li>
+          <li>Nutrition badge system 🏅</li>
+        </ul>
+        <button class="btn-plan btn-coral-plan" onclick="selectAndRegister('Family ₹999/month')">Get Family Plan →</button>
+      </div>
+
+      <div class="plan-card">
+        <div class="plan-icon">⭐</div>
+        <div class="plan-name">Premium</div>
+        <div class="plan-price">₹2,499 <span>/month</span></div>
+        <div class="plan-desc">Full personalized support for your child's health</div>
+        <ul class="plan-features">
+          <li>Unlimited child profiles</li>
+          <li>Custom meal plan design</li>
+          <li>2 video consultations/month</li>
+          <li>Priority WhatsApp support</li>
+          <li>Health & growth reports</li>
+          <li>YouTube recipe video links</li>
+          <li>Gamification badges 🏆</li>
+          <li>Growth chart analysis</li>
+        </ul>
+        <button class="btn-plan btn-coral-plan" onclick="selectAndRegister('Premium ₹2499/month')">Get Premium Plan →</button>
+      </div>
+    </div>
+
+    <!-- WHY NUTRIKID -->
+    <div style="margin-top:48px">
+      <div class="sec-tag">Why Chef Nutri-Kid</div>
+      <div class="sec-title">Everything your child needs 🌱</div>
+      <div class="feat-grid">
+        <div class="feat-card"><div class="feat-icon">🧠</div><div class="feat-title">AI-Powered Plans</div><div class="feat-desc">Gemini AI creates unique plans tailored to your child's age, weight, and food preferences.</div></div>
+        <div class="feat-card"><div class="feat-icon">🛡️</div><div class="feat-title">Allergy-Safe</div><div class="feat-desc">Zero-tolerance allergy protocol — every plan cross-checked against your child's allergen list.</div></div>
+        <div class="feat-card"><div class="feat-icon">🍽️</div><div class="feat-title">Harvard Plate</div><div class="feat-desc">50% veggies, 25% grains, 25% protein — every meal follows proven nutritional science.</div></div>
+        <div class="feat-card"><div class="feat-icon">▶️</div><div class="feat-title">YouTube Videos</div><div class="feat-desc">Every recipe links to a real YouTube tutorial so parents can easily follow along.</div></div>
+        <div class="feat-card"><div class="feat-icon">🏅</div><div class="feat-title">Kid Badges</div><div class="feat-desc">Children earn fun badges for completing Junior Chef tasks and eating healthy meals.</div></div>
+        <div class="feat-card"><div class="feat-icon">📱</div><div class="feat-title">WhatsApp Delivery</div><div class="feat-desc">Receive your personalized PDF meal plan directly on WhatsApp within 24 hours.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- RECIPES TAB -->
+<!-- ══════════════════════════════════════ -->
+<div id="tab-recipes" class="page-section">
+  <div style="margin-bottom:24px">
+    <div class="sec-tag">Recipe Ideas</div>
+    <div class="sec-title">Healthy Recipes Kids Love 🍽️</div>
+    <div class="sec-sub">All recipes follow the Harvard Kid's Healthy Eating Plate. Click any recipe to watch on YouTube!</div>
+  </div>
+
+  <!-- FILTER -->
+  <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+    <button class="quick-btn active" style="padding:8px 16px;font-size:12px" onclick="filterRecipes('all',this)">🍽️ All</button>
+    <button class="quick-btn" style="padding:8px 16px;font-size:12px" onclick="filterRecipes('veg',this)">🟢 Vegetarian</button>
+    <button class="quick-btn" style="padding:8px 16px;font-size:12px" onclick="filterRecipes('nonveg',this)">🔴 Non-Veg</button>
+    <button class="quick-btn" style="padding:8px 16px;font-size:12px" onclick="filterRecipes('egg',this)">🥚 Eggetarian</button>
+    <button class="quick-btn" style="padding:8px 16px;font-size:12px" onclick="filterRecipes('snack',this)">🎯 Snacks</button>
+  </div>
+
+  <div class="recipes-grid" id="recipes-grid"></div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- VIDEOS TAB -->
+<!-- ══════════════════════════════════════ -->
+<div id="tab-videos" class="page-section">
+  <div style="margin-bottom:24px">
+    <div class="sec-tag">YouTube Videos</div>
+    <div class="sec-title">Watch & Cook Together! ▶️</div>
+    <div class="sec-sub">Hand-picked YouTube videos for parents and kids to cook healthy meals together. Available for all paid plans.</div>
+  </div>
+
+  <!-- CATEGORY FILTER -->
+  <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+    <button class="quick-btn" style="padding:8px 16px;font-size:12px" onclick="filterVideos('all',this)">📺 All</button>
+    <button class="quick-btn" style="padding:8px 16px;font-size:12px" onclick="filterVideos('breakfast',this)">🌅 Breakfast</button>
+    <button class="quick-btn" style="padding:8px 16px;font-size:12px" onclick="filterVideos('lunch',this)">🍱 Lunch</button>
+    <button class="quick-btn" style="padding:8px 16px;font-size:12px" onclick="filterVideos('snack',this)">🎯 Snacks</button>
+    <button class="quick-btn" style="padding:8px 16px;font-size:12px" onclick="filterVideos('indian',this)">🇮🇳 Indian</button>
+  </div>
+
+  <div class="videos-grid" id="videos-grid"></div>
+
+  <div style="background:#FFF8F0;border:2px solid #FFD93D;border-radius:16px;padding:20px;margin-top:24px;text-align:center">
+    <div style="font-size:24px;margin-bottom:8px">🔒</div>
+    <div style="font-weight:800;font-size:15px;color:#4A4A4A;margin-bottom:6px">Full Video Library Available in Paid Plans</div>
+    <div style="font-size:13px;color:#666;margin-bottom:14px">Get unlimited access to 50+ curated cooking videos with your Starter, Family or Premium plan</div>
+    <button class="btn-primary" onclick="showTab('register')">Get a Plan →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- KIDS FEATURES TAB -->
+<!-- ══════════════════════════════════════ -->
+<div id="tab-kids" class="page-section">
+  <div style="margin-bottom:28px">
+    <div class="sec-tag">Made for Kids</div>
+    <div class="sec-title">Fun Features for Little Chefs 🧒</div>
+    <div class="sec-sub">Chef Nutri-Kid makes healthy eating exciting through games, badges, and interactive activities!</div>
+  </div>
+
+  <div class="kids-grid">
+    <div class="kids-card">
+      <div class="kids-icon">🏅</div>
+      <div class="kids-title">Nutrition Badges</div>
+      <div class="kids-desc">Kids earn fun badges like "Veggie Hero 🥦", "Protein Warrior 💪", and "Hydration Champion 💧" for eating healthy meals.</div>
+      <div class="kids-badge kb-pro">⭐ Paid Plans</div>
+    </div>
+    <div class="kids-card">
+      <div class="kids-icon">👨‍🍳</div>
+      <div class="kids-title">Junior Chef Tasks</div>
+      <div class="kids-desc">Every recipe includes 2-3 safe, age-appropriate tasks kids can do — washing veggies, mixing sauces, tearing leaves!</div>
+      <div class="kids-badge kb-free">✅ Free & Paid</div>
+    </div>
+    <div class="kids-card">
+      <div class="kids-icon">🎯</div>
+      <div class="kids-title">Move Challenges</div>
+      <div class="kids-desc">Fun 15-second physical activities before eating — "Do 10 Star Jumps to fire up your digestive engine!" 🌟</div>
+      <div class="kids-badge kb-free">✅ Free & Paid</div>
+    </div>
+    <div class="kids-card">
+      <div class="kids-icon">🧠</div>
+      <div class="kids-title">Power Meal Facts</div>
+      <div class="kids-desc">Scientific nutrition facts explained in cute kid language — "Beta-carotene in carrots gives you Night Vision Goggles! 🥕👁️"</div>
+      <div class="kids-badge kb-free">✅ Free & Paid</div>
+    </div>
+    <div class="kids-card">
+      <div class="kids-icon">🦸</div>
+      <div class="kids-title">Food Superheroes</div>
+      <div class="kids-desc">Meet Captain Broccoli 🥦, Carrot Commander 🥕, Egg Knight 🍳, and Grain Guardian 🌾 — each food has a fun superhero character!</div>
+      <div class="kids-badge kb-free">✅ Free & Paid</div>
+    </div>
+    <div class="kids-card">
+      <div class="kids-icon">📊</div>
+      <div class="kids-title">Growth Tracking</div>
+      <div class="kids-desc">AI tracks your child's age, weight, and nutrition trajectory against WHO/CDC standards with monthly health reports.</div>
+      <div class="kids-badge kb-pro">⭐ Premium Only</div>
+    </div>
+    <div class="kids-card">
+      <div class="kids-icon">🌍</div>
+      <div class="kids-title">Multi-Language</div>
+      <div class="kids-desc">Recipes and meal plans available in English, Hindi, Gujarati, Tamil, Telugu, Bengali and more Indian languages!</div>
+      <div class="kids-badge kb-free">✅ Free & Paid</div>
+    </div>
+    <div class="kids-card">
+      <div class="kids-icon">▶️</div>
+      <div class="kids-title">Video Tutorials</div>
+      <div class="kids-desc">Every recipe links to a YouTube video — watch together with your child and make cooking a fun family activity!</div>
+      <div class="kids-badge kb-pro">⭐ Paid Plans</div>
+    </div>
+    <div class="kids-card">
+      <div class="kids-icon">📅</div>
+      <div class="kids-title">Weekly Planner</div>
+      <div class="kids-desc">AI generates a 7-day meal plan for your child with breakfast, lunch, dinner, snacks and a full shopping list!</div>
+      <div class="kids-badge kb-pro">⭐ Paid Plans</div>
+    </div>
+  </div>
+
+  <!-- AGE GUIDE -->
+  <div style="margin-top:40px">
+    <div class="sec-tag">Age Guide</div>
+    <div class="sec-title">What Your Child Needs at Each Stage 👶</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:20px">
+      <div style="background:#fff;border-radius:14px;padding:18px;border:2px solid #FFD93D">
+        <div style="font-size:24px;margin-bottom:8px">👶</div>
+        <div style="font-weight:900;font-size:14px;margin-bottom:6px">0–2 Years</div>
+        <div style="font-size:12px;color:#666;line-height:1.5">Focus on iron-rich foods, soft textures. No salt, sugar or honey. Breast milk + soft purees. High calorie density needed for rapid growth.</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:18px;border:2px solid #4ECDC4">
+        <div style="font-size:24px;margin-bottom:8px">🧒</div>
+        <div style="font-weight:900;font-size:14px;margin-bottom:6px">2–4 Years</div>
+        <div style="font-size:12px;color:#666;line-height:1.5">Introduce variety of textures and flavors. Finger foods, dals, roti. Avoid processed foods. 3 meals + 2 snacks per day for energy.</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:18px;border:2px solid #FF6B6B">
+        <div style="font-size:24px;margin-bottom:8px">🧑</div>
+        <div style="font-weight:900;font-size:14px;margin-bottom:6px">5–8 Years</div>
+        <div style="font-size:12px;color:#666;line-height:1.5">School-age nutrition — brain foods like eggs, nuts, fish. Higher calcium for bone growth. Limit junk food and sugary drinks.</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:18px;border:2px solid #a855f7">
+        <div style="font-size:24px;margin-bottom:8px">👦</div>
+        <div style="font-weight:900;font-size:14px;margin-bottom:6px">9–12 Years</div>
+        <div style="font-size:12px;color:#666;line-height:1.5">Pre-teen growth spurt — higher protein, iron (especially girls), zinc. Sports nutrition if active. Build healthy eating habits before teen years.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- REGISTER TAB -->
+<!-- ══════════════════════════════════════ -->
+<div id="tab-register" class="page-section">
+  <div style="text-align:center;margin-bottom:28px">
+    <div class="sec-tag">Register Now</div>
+    <div class="sec-title">Start Your Child's Nutrition Journey 🚀</div>
+    <div class="sec-sub">Fill the form → We confirm on WhatsApp → You pay via UPI → We send your activation code!</div>
+  </div>
+
+  <div class="form-wrap">
+    <div class="form-title">📋 Registration Form</div>
+    <div class="form-sub">Select a plan and fill your details. We'll send payment link on WhatsApp within 2 hours.</div>
+
+    <div class="form-group">
+      <div class="form-label">1️⃣ Choose Your Plan *</div>
+      <div class="plan-pills">
+        <div class="plan-pill" id="pill-starter" onclick="selectPlan('Starter ₹299/week')">🌱 Starter — ₹299/wk</div>
+        <div class="plan-pill" id="pill-family" onclick="selectPlan('Family ₹999/month')">👨‍👩‍👧 Family — ₹999/mo</div>
+        <div class="plan-pill" id="pill-premium" onclick="selectPlan('Premium ₹2499/month')">⭐ Premium — ₹2,499/mo</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">2️⃣ Your Name (Parent) *</label><input class="form-input" id="parentName" type="text" placeholder="e.g. Priya Sharma"/></div>
+      <div class="form-group" style="background:#FFF8F0;border:2px solid #FFD93D;border-radius:12px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:800;color:#A35D36;margin-bottom:4px">👶 Child Details</div>
+        <div style="font-size:12px;color:#666">Child name and details will be added inside the app after your plan is activated. You can add 1 child (Starter), 3 children (Family), or unlimited (Premium).</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">4️⃣ Child's Age * <span style="font-size:11px;color:#888">(Enter exact age for personalized meal plan)</span></label>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div style="flex:1">
+            <input class="form-input" id="childAgeYears" type="number" min="0" max="12" placeholder="Years (0-12)" style="text-align:center"/>
+          </div>
+          <div style="font-weight:800;color:#888">Yrs</div>
+          <div style="flex:1">
+            <input class="form-input" id="childAgeMonths" type="number" min="0" max="11" placeholder="Months (0-11)" style="text-align:center"/>
+          </div>
+          <div style="font-weight:800;color:#888">Mo</div>
+        </div>
+        <div style="font-size:11px;color:#FF6B6B;margin-top:4px">Example: 1 year 6 months → enter 1 in Years, 6 in Months</div>
+      </div>
+      <div class="form-group"><label class="form-label">5️⃣ Dietary Preference *</label>
+        <select class="form-input" id="dietPref" style="appearance:none">
+          <option>Any / No Restriction</option>
+          <option>Vegetarian</option>
+          <option>Vegan</option>
+          <option>Non-Vegetarian</option>
+          <option>Eggetarian</option>
+          <option>Jain</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">6️⃣ Food Allergies / Restrictions</label><input class="form-input" id="allergies" type="text" placeholder="e.g. Peanuts, Dairy (or 'None')"/></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">7️⃣ WhatsApp Number *</label><input class="form-input" id="whatsapp" type="tel" placeholder="9876543210"/></div>
+      <div class="form-group"><label class="form-label">8️⃣ Email Address *</label><input class="form-input" id="email" type="email" placeholder="you@example.com"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">🎟️ Coupon Code <span style="font-size:10px;color:#888">(optional — get discount)</span></label>
+        <input class="form-input" id="couponCode" type="text" placeholder="e.g. SAVE20" style="text-transform:uppercase"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">🎁 Referral Code <span style="font-size:10px;color:#888">(optional — get ₹50 off)</span></label>
+        <input class="form-input" id="referCode" type="text" placeholder="e.g. REF-ABC123"/>
+      </div>
+    </div>
+    <div style="background:#FFF8F0;border:1px solid #FFD93D;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#A35D36">
+      🎁 <strong>Refer & Earn!</strong> Share your referral code with friends. When they register, you both get ₹50 discount on next renewal! Ask us for your referral code after registration.
+    </div>
+
+    <button class="btn-submit" onclick="submitForm()">🚀 Submit Registration & Open WhatsApp</button>
+    <div class="form-note">🔒 After submitting, WhatsApp opens with your details. We confirm and send UPI payment link. Plan activates within 24 hours of payment! 😊</div>
+    <div class="success-msg" id="successMsg"></div>
+  </div>
+</div>
+
+<footer>🍎 Based on Harvard Kid's Healthy Eating Plate Model &nbsp;|&nbsp; © 2026 Chef Nutri-Kid · Hand-prepared with Clinical Culinary Love</footer>
+
+<!-- CHAT WIDGET -->
+<div class="chat-fab">
+  <div class="chat-bubble" id="chatBubble">👋 Ask NutriBot about meal plans! 🥦</div>
+  <button class="chat-btn" onclick="toggleChat()">🤖</button>
+</div>
+<div class="chat-window" id="chatWindow">
+  <div class="chat-header">
+    <div class="chat-avatar">🍎</div>
+    <div style="flex:1">
+      <div class="chat-header-name">NutriBot — Chef Nutri-Kid</div>
+      <div class="chat-header-status">● Online · Powered by Gemini AI</div>
+    </div>
+    <button class="chat-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="msg msg-bot">👋 Hello! I'm NutriBot, Chef Nutri-Kid's AI assistant!<br/><br/>I help parents choose the right meal plan for children aged 2–12 years 🥗<br/><br/>How can I help you today?</div>
+  </div>
+  <div class="chat-quick">
+    <button class="quick-btn" onclick="sendQuick('What plans do you offer?')">📦 Plans</button>
+    <button class="quick-btn" onclick="sendQuick('How do I register?')">📋 Register</button>
+    <button class="quick-btn" onclick="sendQuick('Is this safe for my child?')">🛡️ Safety</button>
+    <button class="quick-btn" onclick="sendQuick('Do you handle food allergies?')">⚠️ Allergies</button>
+  </div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chatInput" placeholder="Ask anything about nutrition..." onkeydown="if(event.key==='Enter')sendMessage()"/>
+    <button class="chat-send" onclick="sendMessage()">➤</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════
+// TAB NAVIGATION
+// ═══════════════════════════════
+const TABS = ['plans','recipes','videos','kids','register'];
+function showTab(name) {
+  TABS.forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===name);
+  });
+  document.querySelectorAll('.page-tab').forEach((b,i) => b.classList.toggle('active', TABS[i]===name));
+  if(name==='recipes') renderRecipes('all');
+  if(name==='videos') renderVideos('all');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ═══════════════════════════════
+// PLAN SELECTION
+// ═══════════════════════════════
+let selectedPlan = '';
+function selectPlan(plan) {
+  selectedPlan = plan;
+  document.querySelectorAll('.plan-pill').forEach(p=>p.classList.remove('active'));
+  if(plan.includes('Starter')) document.getElementById('pill-starter').classList.add('active');
+  else if(plan.includes('Family')) document.getElementById('pill-family').classList.add('active');
+  else if(plan.includes('Premium')) document.getElementById('pill-premium').classList.add('active');
+}
+
+function selectAndRegister(plan) {
+  selectPlan(plan);
+  showTab('register');
+}
+
+// ═══════════════════════════════
+// RECIPES DATA
+// ═══════════════════════════════
+const RECIPES = [
+  { emoji:'🥦', name:"Captain Broccoli's Power Bowl", tag:'veg', tagLabel:'🟢 Veg', time:'20 min', age:'2+ yrs', serves:2, desc:'A colorful bowl of steamed broccoli, brown rice, chickpeas and olive oil. Brain-boosting and immunity-building!', plate:['🥦 50% Veggies','🌾 25% Brown Rice','🫘 25% Chickpeas'], ytQuery:'kids healthy broccoli rice bowl recipe', ytUrl:'https://www.youtube.com/results?search_query=kids+healthy+broccoli+rice+bowl+recipe' },
+  { emoji:'🥕', name:"Carrot Commander's Soup", tag:'veg', tagLabel:'🟢 Veg', time:'25 min', age:'1+ yrs', serves:3, desc:'Creamy carrot ginger soup packed with Vitamin A and beta-carotene for bright eyes and glowing skin!', plate:['🥕 50% Carrots','🌾 25% Whole Grain Bread','🥛 25% Yogurt'], ytQuery:'healthy carrot soup recipe for kids', ytUrl:'https://www.youtube.com/results?search_query=healthy+carrot+soup+for+kids' },
+  { emoji:'🍳', name:"Egg Knight's Power Omelette", tag:'egg', tagLabel:'🥚 Egg', time:'10 min', age:'2+ yrs', serves:1, desc:'Fluffy egg omelette with spinach, tomatoes and paneer. Protein-packed muscle builder for active kids!', plate:['🥬 50% Spinach & Tomato','🫓 25% Whole Wheat Toast','🥚 25% Eggs & Paneer'], ytQuery:'healthy egg omelette recipe kids breakfast', ytUrl:'https://www.youtube.com/results?search_query=healthy+egg+omelette+kids+breakfast' },
+  { emoji:'🍗', name:"Protein Warrior Chicken Rice", tag:'nonveg', tagLabel:'🔴 Non-Veg', time:'30 min', age:'3+ yrs', serves:2, desc:'Grilled chicken with brown rice and steamed vegetables. High protein for growing muscles and strong bones!', plate:['🥦 50% Mixed Veggies','🍚 25% Brown Rice','🍗 25% Grilled Chicken'], ytQuery:'healthy chicken rice bowl kids recipe', ytUrl:'https://www.youtube.com/results?search_query=healthy+chicken+rice+kids+recipe' },
+  { emoji:'🥣', name:"Oat Hero Morning Bowl", tag:'veg', tagLabel:'🟢 Veg', time:'10 min', age:'2+ yrs', serves:2, desc:'Warm oats with banana, honey, and almond milk. Energy-packed breakfast that keeps kids full all morning!', plate:['🍌 50% Fruit Toppings','🌾 25% Oats','🥛 25% Almond Milk'], ytQuery:'healthy oatmeal breakfast recipe kids', ytUrl:'https://www.youtube.com/results?search_query=healthy+oatmeal+breakfast+kids' },
+  { emoji:'🫘', name:"Dal Champion's Khichdi", tag:'veg', tagLabel:'🟢 Veg', time:'25 min', age:'6m+ yrs', serves:3, desc:'Classic moong dal khichdi with ghee and cumin. Easy to digest, complete protein, perfect for all ages!', plate:['🥕 50% Veggies','🍚 25% Rice','🫘 25% Moong Dal'], ytQuery:'healthy dal khichdi recipe for kids', ytUrl:'https://www.youtube.com/results?search_query=healthy+dal+khichdi+kids' },
+  { emoji:'🥜', name:"Peanut Butter Power Balls", tag:'veg', tagLabel:'🟢 Snack', time:'15 min', age:'3+ yrs', serves:10, desc:'No-bake oat energy balls with peanut butter, honey and chia seeds. Perfect healthy snack for school!', plate:['🥜 Healthy Fats','🌾 Oats','🍯 Natural Sweetener'], ytQuery:'no bake peanut butter oat balls kids snack', ytUrl:'https://www.youtube.com/results?search_query=peanut+butter+oat+energy+balls+kids', category:'snack' },
+  { emoji:'🐠', name:"Salmon Smart Brain Bowl", tag:'nonveg', tagLabel:'🔴 Non-Veg', time:'25 min', age:'5+ yrs', serves:2, desc:'Omega-3 rich salmon with quinoa and roasted sweet potato. Brain-boosting meal for school performance!', plate:['🍠 50% Sweet Potato','🌾 25% Quinoa','🐠 25% Salmon'], ytQuery:'healthy salmon recipe kids brain food', ytUrl:'https://www.youtube.com/results?search_query=healthy+salmon+recipe+kids' },
+  { emoji:'🍱', name:"Rainbow Ragi Pancakes", tag:'veg', tagLabel:'🟢 Veg', time:'20 min', age:'1+ yrs', serves:4, desc:'Ragi flour pancakes with colorful fruit toppings. Iron-rich, calcium-packed and absolutely delicious!', plate:['🍓 50% Fresh Fruits','🌾 25% Ragi Flour','🥛 25% Milk & Egg'], ytQuery:'ragi pancakes kids healthy breakfast', ytUrl:'https://www.youtube.com/results?search_query=ragi+pancakes+kids+recipe' },
+  { emoji:'🥗', name:"Sprout Salad Superhero", tag:'veg', tagLabel:'🟢 Snack', time:'10 min', age:'4+ yrs', serves:2, desc:'Mixed sprouts with cucumber, tomato, lemon and chaat masala. Protein-packed, crunchy and kid-approved!', plate:['🥒 50% Raw Veggies','🫘 50% Mixed Sprouts','🍋 Lemon Dressing'], ytQuery:'healthy sprout salad recipe for kids', ytUrl:'https://www.youtube.com/results?search_query=sprout+salad+kids+recipe', category:'snack' },
+  { emoji:'🍠', name:"Sweet Potato Tikki Hero", tag:'veg', tagLabel:'🟢 Snack', time:'30 min', age:'2+ yrs', serves:6, desc:'Crispy sweet potato tikkis with peas and minimal spices. Iron, Vitamin A and fiber in every bite!', plate:['🍠 50% Sweet Potato','🫛 25% Peas','🌾 25% Breadcrumbs'], ytQuery:'sweet potato tikki recipe kids healthy snack', ytUrl:'https://www.youtube.com/results?search_query=sweet+potato+tikki+kids', category:'snack' },
+  { emoji:'🍲', name:"Iron Warrior Palak Dal", tag:'veg', tagLabel:'🟢 Veg', time:'30 min', age:'1+ yrs', serves:4, desc:'Spinach and masoor dal curry rich in iron and folate. Serve with roti for a complete nutritious meal!', plate:['🥬 50% Spinach','🌾 25% Roti','🫘 25% Masoor Dal'], ytQuery:'palak dal recipe kids healthy lunch', ytUrl:'https://www.youtube.com/results?search_query=palak+dal+kids+recipe' }
+];
+
+function renderRecipes(filter) {
+  const grid = document.getElementById('recipes-grid');
+  const data = filter==='all' ? RECIPES : filter==='snack' ? RECIPES.filter(r=>r.category==='snack'||r.tag==='snack') : RECIPES.filter(r=>r.tag===filter);
+  grid.innerHTML = data.map(r => `
+    <div class="recipe-card">
+      <div class="recipe-img">${r.emoji}</div>
+      <div class="recipe-body">
+        <span class="recipe-tag ${r.tag==='veg'||r.tag==='snack'?'tag-veg':r.tag==='nonveg'?'tag-nonveg':'tag-egg'}">${r.tagLabel}</span>
+        <div class="recipe-name">${r.name}</div>
+        <div class="recipe-desc">${r.desc}</div>
+        <div class="recipe-meta">
+          <span>⏱️ ${r.time}</span>
+          <span>👶 Age ${r.age}</span>
+          <span>🍽️ Serves ${r.serves}</span>
+        </div>
+        <div class="recipe-plate">${r.plate.map(p=>`<span class="plate-pill ${p.includes('50%')?'pp-veg':p.includes('Grain')||p.includes('Rice')||p.includes('Oat')||p.includes('Roti')?'pp-grain':'pp-protein'}">${p}</span>`).join('')}</div>
+        <a class="btn-yt" href="${r.ytUrl}" target="_blank" rel="noreferrer">▶️ Watch on YouTube</a>
+      </div>
+    </div>`).join('');
+}
+
+function filterRecipes(type, btn) {
+  document.querySelectorAll('#tab-recipes .quick-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderRecipes(type);
+}
+
+// ═══════════════════════════════
+// VIDEOS DATA
+// ═══════════════════════════════
+const VIDEOS = [
+  { title:'5 Healthy Breakfast Ideas for Kids', channel:'Healthy Kids Kitchen', duration:'8:24', tag:'breakfast', category:'breakfast', thumb:'https://img.youtube.com/vi/0KSOMA3QBU0/hqdefault.jpg', url:'https://www.youtube.com/results?search_query=5+healthy+breakfast+ideas+for+kids' },
+  { title:'Easy Healthy Lunch Box Ideas for School', channel:'Moms Kitchen', duration:'10:15', tag:'lunch', category:'lunch', thumb:'https://img.youtube.com/vi/jKFMtPWixQo/hqdefault.jpg', url:'https://www.youtube.com/results?search_query=easy+healthy+lunch+box+ideas+school+kids' },
+  { title:'Healthy Indian Snacks for Kids', channel:'Indian Kids Food', duration:'7:30', tag:'snack', category:'snack', thumb:'https://img.youtube.com/vi/vgwLFCWOg4E/hqdefault.jpg', url:'https://www.youtube.com/results?search_query=healthy+indian+snacks+for+kids' },
+  { title:'Dal Khichdi Recipe for Babies & Kids', channel:'Baby Food Chef', duration:'9:00', tag:'indian', category:'indian', thumb:'https://img.youtube.com/vi/m5drLbGKhAo/hqdefault.jpg', url:'https://www.youtube.com/results?search_query=dal+khichdi+recipe+babies+kids' },
+  { title:'Ragi Recipes for Kids — 5 Easy Ideas', channel:'NutriMom India', duration:'11:20', tag:'indian', category:'indian', thumb:'https://img.youtube.com/vi/lkH5-RKUqhg/hqdefault.jpg', url:'https://www.youtube.com/results?search_query=ragi+recipes+for+kids' },
+  { title:'No Bake Energy Balls — Kids Snack', channel:'Healthy Snacks', duration:'5:45', tag:'snack', category:'snack', thumb:'https://img.youtube.com/vi/pKRQIzQEDQc/hqdefault.jpg', url:'https://www.youtube.com/results?search_query=no+bake+energy+balls+kids+snack' },
+  { title:'Egg Recipes for Kids — 10 Easy Ways', channel:'Egg Kitchen', duration:'12:00', tag:'breakfast', category:'breakfast', thumb:'https://img.youtube.com/vi/SiKqnLbTJaI/hqdefault.jpg', url:'https://www.youtube.com/results?search_query=egg+recipes+for+kids+breakfast' },
+  { title:'Palak Paneer for Kids — Healthy Iron', channel:'Indian Mom Chef', duration:'8:55', tag:'indian', category:'indian', thumb:'https://img.youtube.com/vi/e7I8jxvILwE/hqdefault.jpg', url:'https://www.youtube.com/results?search_query=palak+paneer+kids+recipe' },
+  { title:'5 Healthy Kids Smoothies & Drinks', channel:'Smoothie Kids', duration:'6:30', tag:'breakfast', category:'breakfast', thumb:'https://img.youtube.com/vi/RbHBHPWIYQo/hqdefault.jpg', url:'https://www.youtube.com/results?search_query=healthy+smoothies+for+kids' }
+];
+
+function renderVideos(filter) {
+  const grid = document.getElementById('videos-grid');
+  const data = filter==='all' ? VIDEOS : VIDEOS.filter(v=>v.category===filter);
+  grid.innerHTML = data.map(v=>`
+    <div class="video-card">
+      <a href="${v.url}" target="_blank" rel="noreferrer" class="video-thumb" style="display:block;position:relative">
+        <img src="${v.thumb}" alt="${v.title}" style="width:100%;height:160px;object-fit:cover;display:block" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22320%22 height=%22180%22><rect fill=%22%23FF6B6B22%22 width=%22320%22 height=%22180%22/><text x=%22160%22 y=%2295%22 text-anchor=%22middle%22 font-size=%2248%22>▶️</text></svg>'"/>
+        <div class="video-play">▶</div>
+      </a>
+      <div class="video-body">
+        <div class="video-tag">${v.tag}</div>
+        <div class="video-title">${v.title}</div>
+        <div class="video-meta">📺 ${v.channel} · ⏱️ ${v.duration}</div>
+        <a class="btn-watch" href="${v.url}" target="_blank" rel="noreferrer">▶️ Watch on YouTube</a>
+      </div>
+    </div>`).join('');
+}
+
+function filterVideos(type, btn) {
+  document.querySelectorAll('#tab-videos .quick-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderVideos(type==='all'?'all':type);
+}
+
+// ═══════════════════════════════
+// FORM SUBMIT
+// ═══════════════════════════════
+function submitForm() {
+  const parent = document.getElementById('parentName').value.trim();
+  const child = "Will be added in app";
+  // child name removed - added in app after activation
+  const ageYrs = document.getElementById('childAgeYears').value.trim();
+  const ageMos = document.getElementById('childAgeMonths').value.trim();
+  const whatsapp = document.getElementById('whatsapp').value.trim();
+  const email = document.getElementById('email').value.trim();
+
+  if (!selectedPlan) { alert('⚠️ Please select a plan first!'); return; }
+  if (!parent) { alert('⚠️ Please enter your name!'); document.getElementById('parentName').focus(); return; }
+  if (ageYrs === '' && ageMos === '') { alert('⚠️ Please enter your child\'s age!'); document.getElementById('childAgeYears').focus(); return; }
+  if (!whatsapp || whatsapp.replace(/\D/g,'').length < 10) { alert('⚠️ Please enter a valid 10-digit WhatsApp number!'); document.getElementById('whatsapp').focus(); return; }
+  if (!email || !email.includes('@')) { alert('⚠️ Please enter a valid email!'); document.getElementById('email').focus(); return; }
+
+  const yrs = ageYrs || '0'; const mos = ageMos || '0';
+  const ageStr = yrs + ' yr' + (mos !== '0' ? ' ' + mos + ' mo' : '');
+
+  const diet = document.getElementById('dietPref').value;
+  const allergies = document.getElementById('allergies').value.trim() || 'None';
+  const referCode = document.getElementById('referCode') ? document.getElementById('referCode').value.trim() : '';
+  const couponCode = document.getElementById('couponCode') ? document.getElementById('couponCode').value.trim() : '';
+
+  let childrenInfo = `👶 Child 1: ${child} (${ageStr})`;
+  if (selectedPlan.includes('Family')) {
+    const c2 = prompt('Family Plan: Up to 3 children!\n\nChild 2 name? (Cancel if only 1 child)');
+    if (c2) {
+      const a2y = prompt('Child 2 — Age (years)?') || '0';
+      const a2m = prompt('Child 2 — Age (months)?') || '0';
+      childrenInfo += `\n👶 Child 2: ${c2} (${a2y} yr ${a2m} mo)`;
+      const c3 = prompt('Child 3 name? (Cancel if no more)');
+      if (c3) {
+        const a3y = prompt('Child 3 — Age (years)?') || '0';
+        const a3m = prompt('Child 3 — Age (months)?') || '0';
+        childrenInfo += `\n👶 Child 3: ${c3} (${a3y} yr ${a3m} mo)`;
+      }
+    }
+  }
+
+  const msg = `🌟 NEW Chef Nutri-Kid Registration!\n\n👤 Parent: ${parent}\n${childrenInfo}\n🥗 Diet: ${diet}\n🚫 Allergies: ${allergies}\n📦 Plan: ${selectedPlan}\n📱 WhatsApp: ${whatsapp}\n📧 Email: ${email}${couponCode?'\n🎟️ Coupon: '+couponCode:''}${referCode?'\n🎁 Refer Code: '+referCode:''}\n\nKindly confirm my registration and share payment details. Thank you! 🙏`;
+
+  const waUrl = `https://wa.me/917990878248?text=${encodeURIComponent(msg)}`;
+  const successEl = document.getElementById('successMsg');
+  successEl.className = 'success-msg show';
+  successEl.innerHTML = `
+    <h3 style="color:#0F6E56;font-weight:900;font-size:17px;margin-bottom:8px">🎉 Registration Submitted, ${parent}!</h3>
+    <p style="color:#0F6E56;font-size:13px;margin-bottom:4px">Plan: <strong>${selectedPlan}</strong> | Child: <strong>${child}</strong> (${ageStr})</p>
+    <p style="color:#0F6E56;font-size:12px;margin-bottom:12px">WhatsApp is opening now to confirm your registration...</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <a href="${waUrl}" target="_blank" style="background:#25D366;color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;text-decoration:none;font-size:13px">📲 Open WhatsApp</a>
+      <a href="/payment.html" target="_blank" style="background:#FF6B6B;color:#fff;padding:10px 18px;border-radius:12px;font-weight:800;text-decoration:none;font-size:13px">💳 Go to Payment</a>
+    </div>
+    <p style="color:#888;font-size:11px;margin-top:10px">✅ After payment, activation code sent to your WhatsApp within 24 hours</p>`;
+  setTimeout(()=>window.open(waUrl,'_blank'), 400);
+}
+
+// ═══════════════════════════════
+// NUTRIBOT — uses /api/chat (Gemini via Netlify function)
+// ═══════════════════════════════
+let chatOpen = false;
+let chatHistory = [];
+
+setTimeout(()=>{
+  const b=document.getElementById('chatBubble');
+  if(b){b.classList.add('show');setTimeout(()=>b.classList.remove('show'),6000);}
+},3000);
+
+function toggleChat(){
+  chatOpen=!chatOpen;
+  document.getElementById('chatWindow').classList.toggle('open',chatOpen);
+  document.getElementById('chatBubble').classList.remove('show');
+}
+
+function sendQuick(text){
+  document.getElementById('chatInput').value=text;
+  sendMessage();
+}
+
+async function sendMessage(){
+  const input=document.getElementById('chatInput');
+  const text=input.value.trim();
+  if(!text) return;
+  input.value='';
+  appendMsg(text,'user');
+  chatHistory.push({role:'user',text});
+  const typingEl=appendTyping();
+  try{
+    // Use YOUR Netlify /api/chat endpoint — no API key needed in browser!
+    const res=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:text, history:chatHistory.slice(-8)})
+    });
+    const data=await res.json();
+    typingEl.remove();
+    const reply=data.reply||"I'm sorry, I couldn't process that. Please try again! 😊";
+    chatHistory.push({role:'model',text:reply});
+    appendMsg(reply,'bot');
+  }catch(e){
+    typingEl.remove();
+    appendMsg("Oops! NutriBot is resting 😴 Please WhatsApp us at 7990878248 or try again! 😊",'bot');
+  }
+}
+
+function appendMsg(text,type){
+  const el=document.createElement('div');
+  el.className='msg msg-'+type;
+  el.innerHTML=text.replace(/\n/g,'<br/>');
+  document.getElementById('chatMessages').appendChild(el);
+  el.scrollIntoView({behavior:'smooth'});
+  return el;
+}
+
+function appendTyping(){
+  const el=document.createElement('div');
+  el.className='msg msg-typing';
+  el.innerHTML='<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+  document.getElementById('chatMessages').appendChild(el);
+  el.scrollIntoView({behavior:'smooth'});
+  return el;
+}
+</script>
+</body>
+</html>

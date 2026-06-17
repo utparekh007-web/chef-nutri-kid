@@ -1,0 +1,6 @@
+{
+  "name": "Chef Nutri-Kid",
+  "description": "An interactive children's nutrition coach and culinary helper that transforms everyday ingredients into balanced, Harvard Kid's Plate recipes with active games and tasks.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
