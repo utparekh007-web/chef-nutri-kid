@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Chef Nutri-Kid — Admin Panel</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
+body{background:#f0f2f5;min-height:100vh;color:#2d2d2d}
+.ribbon{height:4px;background:linear-gradient(90deg,#FF6B6B,#FFD93D,#4ECDC4);position:fixed;top:0;left:0;right:0;z-index:9999}
+
+/* LOGIN */
+.login-wrap{display:none;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)}
+.login-wrap.show{display:flex}
+.lcard{background:#fff;border-radius:24px;padding:44px 36px;width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.lcard h1{font-size:22px;font-weight:900;margin:12px 0 4px}
+.lrole{display:inline-block;background:#FF6B6B;color:#fff;padding:3px 14px;border-radius:999px;font-size:11px;font-weight:800;margin-bottom:20px}
+.lfi{width:100%;padding:13px 16px;border:2px solid #e8e8e8;border-radius:12px;font-size:14px;outline:none;margin-bottom:12px;transition:.2s;font-family:inherit}
+.lfi:focus{border-color:#FF6B6B}
+.lbtn{width:100%;padding:14px;background:#FF6B6B;color:#fff;border:none;border-radius:12px;font-weight:900;font-size:15px;cursor:pointer}
+.lerr{color:#e05555;font-size:13px;margin-top:8px;min-height:18px;font-weight:600}
+
+/* LAYOUT */
+.layout{display:none;min-height:100vh}
+.layout.show{display:flex}
+.sidebar{width:250px;background:#1e293b;position:fixed;top:0;bottom:0;left:0;overflow-y:auto;z-index:100;padding-bottom:20px}
+.sb-logo{padding:20px 18px 16px;border-bottom:1px solid #334155}
+.sb-logo-name{color:#fff;font-size:15px;font-weight:900}
+.sb-logo-sub{color:#94a3b8;font-size:11px;margin-top:2px}
+.sb-role{display:inline-block;padding:3px 10px;border-radius:999px;font-size:10px;font-weight:800;margin-top:8px}
+.sb-role.master{background:#FFD93D;color:#1e293b}
+.sb-role.admin{background:#4ECDC4;color:#1e293b}
+.sb-sec{padding:16px 14px 4px;color:#475569;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 16px;color:#94a3b8;cursor:pointer;border-radius:10px;margin:2px 8px;font-size:13px;font-weight:600;transition:.15s}
+.sb-item:hover,.sb-item.active{background:#334155;color:#fff}
+.sb-item.active{background:#FF6B6B}
+.sb-item.m-only{border-left:3px solid #FFD93D}
+.sb-item.m-only:hover,.sb-item.m-only.active{background:#854d0e;color:#fef08a}
+.main{margin-left:250px;padding-top:4px;min-height:100vh}
+.topbar{background:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #f0f0f0;position:sticky;top:4px;z-index:50;gap:12px}
+.tb-title{font-size:17px;font-weight:900;color:#2d2d2d}
+.tb-right{display:flex;align-items:center;gap:10px}
+.tb-user{background:#f1f5f9;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:700;color:#475569}
+.tb-logout{background:#fee2e2;color:#dc2626;border:none;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer}
+.content{padding:20px}
+
+/* MASTER ONLY BANNER */
+.master-banner{background:linear-gradient(135deg,#fef9c3,#fef08a);border:2px solid #FFD93D;border-radius:14px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.master-banner.hidden{display:none}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px}
+.scard{background:#fff;border-radius:14px;padding:18px;text-align:center;border:2px solid #f0f0f0;transition:.2s}
+.scard:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08)}
+.scard-icon{font-size:28px;margin-bottom:8px}
+.scard-num{font-size:28px;font-weight:900;color:#FF6B6B}
+.scard-lbl{font-size:10px;font-weight:800;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+
+/* CARDS */
+.card{background:#fff;border-radius:14px;padding:20px;margin-bottom:16px;border:2px solid #f0f0f0}
+.card-title{font-size:14px;font-weight:900;color:#2d2d2d;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mbadge{background:#FFD93D;color:#1e293b;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:800}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{background:#f8fafc;padding:9px 10px;text-align:left;font-weight:800;color:#64748b;border-bottom:2px solid #f0f0f0;font-size:10px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.tbl td{padding:9px 10px;border-bottom:1px solid #f5f5f5;vertical-align:middle}
+.tbl tr:hover td{background:#fafafa}
+.empty td{text-align:center;padding:28px;color:#aaa;font-size:13px}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:800}
+.b-pending{background:#fef9c3;color:#854d0e}
+.b-active{background:#dcfce7;color:#166534}
+.b-expired{background:#fee2e2;color:#991b1b}
+.b-master{background:#fef08a;color:#713f12}
+.b-admin{background:#cffafe;color:#155e75}
+.b-used{background:#dbeafe;color:#1e40af}
+.b-unused{background:#f0fdf4;color:#166534}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;border:none;transition:.15s;white-space:nowrap;font-family:inherit}
+.btn:hover{opacity:.88;transform:scale(1.02)}
+.btn-coral{background:#FF6B6B;color:#fff}
+.btn-teal{background:#4ECDC4;color:#fff}
+.btn-gold{background:#FFD93D;color:#1e293b}
+.btn-red{background:#fee2e2;color:#dc2626}
+.btn-green{background:#dcfce7;color:#166534}
+.btn-wa{background:#25D366;color:#fff}
+.btn-gray{background:#f1f5f9;color:#475569}
+
+/* FORM */
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.lbl{font-size:10px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px}
+.inp{padding:10px 12px;border:2px solid #e8e8e8;border-radius:10px;font-size:13px;font-family:inherit;outline:none;transition:.2s;width:100%}
+.inp:focus{border-color:#FF6B6B}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.fgrid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* NOTIF */
+.notif{padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:14px;display:none;font-weight:600}
+.notif.show{display:block}
+.notif.ok{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+.notif.err{background:#fee2e2;color:#dc2626;border:1px solid #fecaca}
+.notif.info{background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe}
+
+/* CODE BOX */
+.codebox{background:#f0fffe;border:2px solid #4ECDC4;border-radius:12px;padding:14px;margin:12px 0;display:none}
+.codeval{font-family:monospace;font-size:20px;font-weight:900;color:#0F6E56;letter-spacing:3px}
+
+/* COUPON CARD */
+.cpcard{background:#f0fffe;border:2px solid #4ECDC4;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.cpcode{font-family:monospace;font-size:15px;font-weight:900;color:#0F6E56}
+
+/* PLAN EDITOR */
+.pecard{background:#fff7f0;border:2px solid #FFD93D;border-radius:12px;padding:16px;margin-bottom:12px}
+
+/* LOG */
+.logitem{padding:8px 12px;border-left:3px solid #e8e8e8;margin-bottom:6px;background:#fafafa;border-radius:0 6px 6px 0;font-size:12px}
+.logtime{color:#888;font-size:10px;margin-top:2px}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:18px;padding:24px;width:500px;max-width:96vw;max-height:88vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:900;margin-bottom:14px;color:#2d2d2d}
+.modal-close{float:right;background:none;border:none;font-size:20px;cursor:pointer;color:#888;margin:-4px 0 0}
+
+/* RECIPE QUANTITY */
+.rq-card{background:#fff;border:2px solid #FFD93D;border-radius:12px;padding:16px;margin-bottom:12px}
+.rq-title{font-size:14px;font-weight:900;color:#2d2d2d;margin-bottom:4px}
+.rq-age{font-size:11px;color:#FF6B6B;font-weight:800;margin-bottom:10px}
+.rq-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.rq-item{background:#f8fafc;border-radius:8px;padding:8px 10px}
+.rq-ing{font-size:12px;font-weight:800;color:#2d2d2d}
+.rq-qty{font-size:11px;color:#FF6B6B;font-weight:700}
+.rq-note{font-size:10px;color:#888;margin-top:2px}
+
+/* TABS */
+.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.tab-btn{padding:7px 16px;border-radius:8px;font-weight:800;font-size:11px;cursor:pointer;border:2px solid #e8e8e8;background:#fff;color:#666;transition:.15s;font-family:inherit}
+.tab-btn.active{background:#FF6B6B;color:#fff;border-color:#FF6B6B}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* DIFF TABLE MASTER VS ADMIN */
+.diff-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px}
+.diff-table th{background:#1e293b;color:#fff;padding:10px 12px;font-size:11px;font-weight:800}
+.diff-table td{padding:9px 12px;border-bottom:1px solid #f0f0f0}
+.diff-table tr:nth-child(even) td{background:#f8fafc}
+.yes{color:#166534;font-weight:800}
+.no{color:#dc2626;font-weight:800}
+
+@media(max-width:700px){.sidebar{transform:translateX(-100%);transition:.3s}.sidebar.open{transform:none}.main{margin-left:0}.fgrid{grid-template-columns:1fr}.fgrid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="ribbon"></div>
+
+<!-- LOGIN -->
+<div class="login-wrap show" id="loginWrap">
+  <div class="lcard">
+    <div style="font-size:52px">👨‍🍳</div>
+    <h1>Chef Nutri-Kid</h1>
+    <div class="lrole">ADMIN LOGIN</div>
+    <input class="lfi" type="text" id="lu" placeholder="Username" autocomplete="off"/>
+    <input class="lfi" type="password" id="lp" placeholder="Password" onkeydown="if(event.key==='Enter')login()"/>
+    <button class="lbtn" onclick="login()">🔐 Login</button>
+    <div class="lerr" id="lerr"></div>
+    <div style="font-size:11px;color:#aaa;margin-top:12px">Master Admin 👑 has full control over everything</div>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout" id="layout">
+  <div class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-name">👨‍🍳 Chef Nutri-Kid</div>
+      <div class="sb-logo-sub">Business Dashboard</div>
+      <div class="sb-role" id="roleChip">ADMIN</div>
+    </div>
+
+    <div class="sb-sec">Main</div>
+    <div class="sb-item active" onclick="pg('dashboard')">📊 Dashboard</div>
+    <div class="sb-item" onclick="pg('customers')">👥 Customers</div>
+    <div class="sb-item" onclick="pg('payments')">💰 Payments</div>
+    <div class="sb-item" onclick="pg('codes')">🔑 Activation Codes</div>
+    <div class="sb-item" onclick="pg('coupons')">🎟️ Coupons</div>
+    <div class="sb-item" onclick="pg('notify')">🔔 Send Notifications</div>
+    <div class="sb-item" onclick="pg('recipes')">🍳 Recipe Quantities</div>
+
+    <div class="sb-sec" id="msec">👑 Master Only</div>
+    <div class="sb-item m-only" onclick="pg('plans')" id="mPlans">💼 Plan & Pricing</div>
+    <div class="sb-item m-only" onclick="pg('admins')" id="mAdmins">🛡️ Admin Accounts</div>
+    <div class="sb-item m-only" onclick="pg('settings')" id="mSettings">⚙️ System Settings</div>
+    <div class="sb-item m-only" onclick="pg('logs')" id="mLogs">📋 Activity Logs</div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button onclick="toggleSidebar()" style="background:none;border:none;font-size:20px;cursor:pointer;display:none" id="menuBtn">☰</button>
+        <div class="tb-title" id="pgTitle">📊 Dashboard</div>
+      </div>
+      <div class="tb-right">
+        <div class="tb-user" id="topUser">master</div>
+        <button class="tb-logout" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="notif" id="gnotif"></div>
+
+      <!-- DASHBOARD -->
+      <div id="pg-dashboard">
+        <div class="stats">
+          <div class="scard"><div class="scard-icon">👥</div><div class="scard-num" id="s1">0</div><div class="scard-lbl">Total Customers</div></div>
+          <div class="scard"><div class="scard-icon">✅</div><div class="scard-num" id="s2">0</div><div class="scard-lbl">Active Plans</div></div>
+          <div class="scard"><div class="scard-icon">⏳</div><div class="scard-num" id="s3">0</div><div class="scard-lbl">Pending Payment</div></div>
+          <div class="scard"><div class="scard-icon">⛔</div><div class="scard-num" id="s4">0</div><div class="scard-lbl">Expired Plans</div></div>
+          <div class="scard"><div class="scard-icon">💰</div><div class="scard-num" id="s5">₹0</div><div class="scard-lbl">Total Revenue</div></div>
+          <div class="scard"><div class="scard-icon">🎟️</div><div class="scard-num" id="s6">0</div><div class="scard-lbl">Active Coupons</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">⚠️ Plans Expiring in Next 3 Days</div>
+          <table class="tbl"><thead><tr><th>Customer</th><th>Child</th><th>Plan</th><th>Expires</th><th>Days Left</th><th>Action</th></tr></thead>
+          <tbody id="expBody"><tr class="empty"><td colspan="6">🎉 No plans expiring soon!</td></tr></tbody></table>
+        </div>
+        <div class="card">
+          <div class="card-title">🕐 Recent Activity (Last 5)</div>
+          <div id="recentLogs"><div style="color:#aaa;font-size:13px">No activity yet.</div></div>
+        </div>
+      </div>
+
+      <!-- CUSTOMERS -->
+      <div id="pg-customers" style="display:none">
+        <div class="card">
+          <div class="card-title">➕ Add New Customer</div>
+          <div class="fgrid">
+            <div class="fg"><div class="lbl">Parent Name *</div><input class="inp" id="c-name" placeholder="Priya Sharma"/></div>
+            <div class="fg"><div class="lbl">Child Name</div><input class="inp" id="c-child" placeholder="Arjun"/></div>
+            <div class="fg"><div class="lbl">Child Age</div>
+              <select class="inp" id="c-age">
+                <option>0-6 months</option><option>6-12 months</option><option>1-2 years</option>
+                <option>2-4 years</option><option>5-8 years</option><option>9-12 years</option>
+              </select>
+            </div>
+            <div class="fg"><div class="lbl">WhatsApp *</div><input class="inp" id="c-phone" placeholder="9876543210"/></div>
+            <div class="fg"><div class="lbl">Email</div><input class="inp" type="email" id="c-email" placeholder="parent@email.com"/></div>
+            <div class="fg"><div class="lbl">Allergies</div><input class="inp" id="c-allergy" placeholder="None / Dairy / Nuts..."/></div>
+            <div class="fg"><div class="lbl">Plan *</div>
+              <select class="inp" id="c-plan">
+                <option value="Starter">🌱 Starter ₹299/week</option>
+                <option value="Family">👨‍👩‍👧 Family ₹999/month</option>
+                <option value="Premium">⭐ Premium ₹2499/month</option>
+              </select>
+            </div>
+            <div class="fg"><div class="lbl">Amount Paid (₹)</div><input class="inp" type="number" id="c-amount" placeholder="0"/></div>
+            <div class="fg"><div class="lbl">Coupon Code</div><input class="inp" id="c-coupon" placeholder="Optional"/></div>
+            <div class="fg"><div class="lbl">Status</div>
+              <select class="inp" id="c-status"><option value="pending">Pending</option><option value="active">Active</option></select>
+            </div>
+          </div>
+          <button class="btn btn-coral" onclick="addCustomer()">➕ Add Customer</button>
+        </div>
+        <div class="card">
+          <div class="card-title">👥 All Customers
+            <input class="inp" style="max-width:180px;margin-left:auto;font-size:12px" placeholder="🔍 Search..." oninput="filterC(this.value)"/>
+          </div>
+          <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>#</th><th>Parent</th><th>Child/Age</th><th>WhatsApp</th><th>Plan</th><th>Paid</th><th>Expires</th><th>Status</th><th>Code</th><th>Actions</th></tr></thead>
+            <tbody id="cBody"><tr class="empty"><td colspan="10">No customers yet 😊</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- PAYMENTS -->
+      <div id="pg-payments" style="display:none">
+        <div class="card" style="background:#fff7f0;border-color:#FFD93D">
+          <div class="card-title">💳 Your UPI Payment Info</div>
+          <div style="font-size:16px;font-weight:700">UPI ID: <span style="font-family:monospace;color:#FF6B6B;font-size:18px" id="displayUPI">7990878248@ybl</span></div>
+          <div style="font-size:12px;color:#888;margin-top:6px">When you receive payment screenshot on WhatsApp → Add customer → Click Activate → Code sends automatically 😊</div>
+        </div>
+        <div class="card">
+          <div class="card-title">💰 All Payment Records</div>
+          <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>Date</th><th>Parent</th><th>Plan</th><th>Amount</th><th>Discount</th><th>Final Paid</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="payBody"><tr class="empty"><td colspan="8">No payments yet.</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- CODES -->
+      <div id="pg-codes" style="display:none">
+        <div class="card">
+          <div class="card-title">⚡ Generate Activation Code</div>
+          <div class="fgrid2" style="max-width:420px">
+            <div class="fg"><div class="lbl">Plan</div>
+              <select class="inp" id="gen-plan">
+                <option value="STARTER">🌱 Starter</option>
+                <option value="FAMILY">👨‍👩‍👧 Family</option>
+                <option value="PREMIUM">⭐ Premium</option>
+              </select>
+            </div>
+            <div class="fg"><div class="lbl">Assign To</div><input class="inp" id="gen-assign" placeholder="Customer name"/></div>
+          </div>
+          <button class="btn btn-coral" onclick="genCode()">⚡ Generate Code</button>
+          <div class="codebox" id="codebox">
+            <div style="font-size:10px;font-weight:800;color:#0F6E56;margin-bottom:6px">ACTIVATION CODE:</div>
+            <span class="codeval" id="codeval"></span>
+            <button class="btn btn-teal" style="margin-left:10px" onclick="cpCode()">📋 Copy</button>
+            <div style="font-size:11px;color:#888;margin-top:6px">✅ Send this to your customer on WhatsApp after payment</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">🔑 All Generated Codes</div>
+          <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>Code</th><th>Plan</th><th>Created</th><th>Status</th><th>Assigned To</th><th>Action</th></tr></thead>
+            <tbody id="codesBody"><tr class="empty"><td colspan="6">No codes yet.</td></tr></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- COUPONS -->
+      <div id="pg-coupons" style="display:none">
+        <div class="card">
+          <div class="card-title">🎟️ Create New Coupon</div>
+          <div class="fgrid">
+            <div class="fg"><div class="lbl">Coupon Code *</div><input class="inp" id="cp-code" placeholder="SAVE20" style="text-transform:uppercase"/></div>
+            <div class="fg"><div class="lbl">Type</div>
+              <select class="inp" id="cp-type"><option value="percent">Percentage (%)</option><option value="flat">Flat Amount (₹)</option></select>
+            </div>
+            <div class="fg"><div class="lbl">Value *</div><input class="inp" type="number" id="cp-val" placeholder="20"/></div>
+            <div class="fg"><div class="lbl">Applicable Plan</div>
+              <select class="inp" id="cp-plan">
+                <option value="all">All Plans</option><option value="Starter">Starter Only</option>
+                <option value="Family">Family Only</option><option value="Premium">Premium Only</option>
+              </select>
+            </div>
+            <div class="fg"><div class="lbl">Max Uses (0=unlimited)</div><input class="inp" type="number" id="cp-max" placeholder="0"/></div>
+            <div class="fg"><div class="lbl">Expiry Date</div><input class="inp" type="date" id="cp-exp"/></div>
+            <div class="fg"><div class="lbl">Description</div><input class="inp" id="cp-desc" placeholder="Welcome offer"/></div>
+          </div>
+          <button class="btn btn-coral" onclick="addCoupon()">🎟️ Create Coupon</button>
+        </div>
+        <div class="card">
+          <div class="card-title">🎟️ All Coupons</div>
+          <div id="couponList"><div style="color:#aaa;font-size:13px">No coupons yet.</div></div>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div id="pg-notify" style="display:none">
+        <div class="card">
+          <div class="card-title">📲 Send WhatsApp Message</div>
+          <div class="fgrid">
+            <div class="fg"><div class="lbl">Send To</div>
+              <select class="inp" id="nt-to" onchange="toggleSinglePhone()">
+                <option value="all">All Active Customers</option>
+                <option value="pending">All Pending Customers</option>
+                <option value="expiring">Expiring in 3 Days</option>
+                <option value="single">Single Customer</option>
+              </select>
+            </div>
+            <div class="fg" id="nt-single-wrap" style="display:none">
+              <div class="lbl">Phone Number</div>
+              <input class="inp" id="nt-phone" placeholder="9876543210"/>
+            </div>
+            <div class="fg"><div class="lbl">Message Template</div>
+              <select class="inp" id="nt-tmpl" onchange="loadTmpl()">
+                <option value="">Custom Message</option>
+                <option value="welcome">👋 Welcome & Activation</option>
+                <option value="renewal">🔄 Renewal Reminder</option>
+                <option value="expiring">⚠️ Expiry Warning</option>
+                <option value="offer">🎟️ Special Offer</option>
+                <option value="payment">💰 Payment Pending</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg">
+            <div class="lbl">Message (use {name} {plan} {expiry} {code})</div>
+            <textarea class="inp" id="nt-msg" rows="5" placeholder="Type your message..."></textarea>
+          </div>
+          <button class="btn btn-wa" onclick="sendNotif()">📲 Open WhatsApp & Send</button>
+          <div style="font-size:11px;color:#888;margin-top:6px">Opens WhatsApp for each recipient one by one</div>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 Message Templates (click to copy)</div>
+          <div class="tabs">
+            <button class="tab-btn active" onclick="switchNtab('welcome',this)">Welcome</button>
+            <button class="tab-btn" onclick="switchNtab('renewal',this)">Renewal</button>
+            <button class="tab-btn" onclick="switchNtab('expiring',this)">Expiring</button>
+            <button class="tab-btn" onclick="switchNtab('offer',this)">Offer</button>
+          </div>
+          <div class="tab-panel active" id="nt-welcome">
+            <div style="background:#f0fffe;border:1px solid #4ECDC4;border-radius:10px;padding:14px;font-size:12px;white-space:pre-wrap;line-height:1.6">🎉 Welcome to Chef Nutri-Kid, {name}!
+
+Your {plan} Plan is now ACTIVE! 🌟
+
+Your Activation Code: {code}
+
+Steps to unlock:
+1️⃣ Visit chef-nutrikid.netlify.app
+2️⃣ Click any locked feature
+3️⃣ Enter code: {code}
+4️⃣ Enjoy unlimited healthy meals! 🍎
+
+Your child's healthy journey starts TODAY! 💚
+— Chef Nutri-Kid Team</div>
+          </div>
+          <div class="tab-panel" id="nt-renewal">
+            <div style="background:#f0fffe;border:1px solid #4ECDC4;border-radius:10px;padding:14px;font-size:12px;white-space:pre-wrap;line-height:1.6">🔄 Hello {name}!
+
+Your Chef Nutri-Kid {plan} expires on {expiry}.
+
+Renew now to keep your child's healthy meal plans going! 🥦❤️
+
+💳 Pay here: chef-nutrikid.netlify.app/payment.html
+📱 UPI: 7990878248@ybl
+
+Reply after payment — activated in minutes! 😊</div>
+          </div>
+          <div class="tab-panel" id="nt-expiring">
+            <div style="background:#fff7f0;border:1px solid #FFD93D;border-radius:10px;padding:14px;font-size:12px;white-space:pre-wrap;line-height:1.6">⚠️ Hello {name}!
+
+Your Chef Nutri-Kid plan expires in just 3 days!
+
+Don't break your child's healthy routine 🥦
+
+Renew today in 2 minutes:
+💳 chef-nutrikid.netlify.app/payment.html
+📱 UPI: 7990878248@ybl</div>
+          </div>
+          <div class="tab-panel" id="nt-offer">
+            <div style="background:#fef9c3;border:1px solid #FFD93D;border-radius:10px;padding:14px;font-size:12px;white-space:pre-wrap;line-height:1.6">🎟️ Special Offer for {name}!
+
+Get 20% OFF on your next renewal!
+Use code: RENEW20
+
+Valid till: {expiry}
+
+💳 chef-nutrikid.netlify.app/payment.html
+
+🍎 Chef Nutri-Kid — Because your child deserves the best!</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECIPE QUANTITIES (age-wise) -->
+      <div id="pg-recipes" style="display:none">
+        <div class="card" style="background:#fff7f0;border-color:#FFD93D">
+          <div class="card-title">🍳 Age-Wise Recipe Quantity Guide
+            <span style="font-size:11px;color:#888;font-weight:400">Reference for creating personalized meal plans</span>
+          </div>
+          <div style="font-size:12px;color:#555;margin-bottom:14px">These are scientifically recommended portion sizes for each age group based on the Harvard Kids Healthy Eating Plate. Use these when preparing or recommending recipes to parents.</div>
+        </div>
+
+        <div class="rq-card">
+          <div class="rq-title">🍼 0–6 Months</div>
+          <div class="rq-age">Breast Milk / Formula ONLY — No solid food</div>
+          <div class="rq-grid">
+            <div class="rq-item"><div class="rq-ing">Breast Milk</div><div class="rq-qty">Every 2-3 hours</div><div class="rq-note">On demand feeding</div></div>
+            <div class="rq-item"><div class="rq-ing">Formula Milk</div><div class="rq-qty">60-90ml per feed</div><div class="rq-note">Every 3-4 hours</div></div>
+          </div>
+        </div>
+
+        <div class="rq-card">
+          <div class="rq-title">🥣 6–12 Months</div>
+          <div class="rq-age">Start solids + Breast Milk. Purees & mashed foods only.</div>
+          <div class="rq-grid">
+            <div class="rq-item"><div class="rq-ing">Rice Porridge / Daliya</div><div class="rq-qty">2-4 tbsp</div><div class="rq-note">Start with 1 tsp, increase slowly</div></div>
+            <div class="rq-item"><div class="rq-ing">Mashed Banana</div><div class="rq-qty">2-3 tbsp</div><div class="rq-note">Ripe, no added sugar</div></div>
+            <div class="rq-item"><div class="rq-ing">Mashed Sweet Potato</div><div class="rq-qty">2-4 tbsp</div><div class="rq-note">Boiled & pureed</div></div>
+            <div class="rq-item"><div class="rq-ing">Moong Dal Water</div><div class="rq-qty">3-4 tbsp</div><div class="rq-note">Thin consistency</div></div>
+            <div class="rq-item"><div class="rq-ing">Apple Puree</div><div class="rq-qty">2-3 tbsp</div><div class="rq-note">No skin, no seeds</div></div>
+            <div class="rq-item"><div class="rq-ing">Carrot Puree</div><div class="rq-qty">2-4 tbsp</div><div class="rq-note">Steamed & blended</div></div>
+            <div class="rq-item"><div class="rq-ing">Mashed Egg Yolk</div><div class="rq-qty">½ yolk</div><div class="rq-note">Well cooked only</div></div>
+            <div class="rq-item"><div class="rq-ing">Breast Milk / Formula</div><div class="rq-qty">500-700ml/day</div><div class="rq-note">Continue as main feed</div></div>
+          </div>
+        </div>
+
+        <div class="rq-card">
+          <div class="rq-title">🍚 1–2 Years</div>
+          <div class="rq-age">Family foods — soft, small pieces. 3 meals + 2 snacks daily.</div>
+          <div class="rq-grid">
+            <div class="rq-item"><div class="rq-ing">Rice / Roti</div><div class="rq-qty">¼ cup cooked</div><div class="rq-note">Per meal</div></div>
+            <div class="rq-item"><div class="rq-ing">Dal / Lentils</div><div class="rq-qty">2-3 tbsp</div><div class="rq-note">Well cooked, soft</div></div>
+            <div class="rq-item"><div class="rq-ing">Mashed Vegetables</div><div class="rq-qty">2-4 tbsp</div><div class="rq-note">Any soft veggie</div></div>
+            <div class="rq-item"><div class="rq-ing">Paneer</div><div class="rq-qty">1-2 small cubes</div><div class="rq-note">Soft texture</div></div>
+            <div class="rq-item"><div class="rq-ing">Egg (whole)</div><div class="rq-qty">½ egg</div><div class="rq-note">Well cooked</div></div>
+            <div class="rq-item"><div class="rq-ing">Milk</div><div class="rq-qty">350-500ml/day</div><div class="rq-note">Full fat cow milk</div></div>
+            <div class="rq-item"><div class="rq-ing">Fruits</div><div class="rq-qty">¼ cup mashed</div><div class="rq-note">2-3 times/day</div></div>
+            <div class="rq-item"><div class="rq-ing">Ghee / Oil</div><div class="rq-qty">½ tsp per meal</div><div class="rq-note">For energy</div></div>
+          </div>
+        </div>
+
+        <div class="rq-card">
+          <div class="rq-title">🥦 2–4 Years</div>
+          <div class="rq-age">Regular family diet. 3 meals + 2 snacks. Avoid junk food.</div>
+          <div class="rq-grid">
+            <div class="rq-item"><div class="rq-ing">Rice / Roti</div><div class="rq-qty">½ cup / 1 small roti</div><div class="rq-note">Per meal</div></div>
+            <div class="rq-item"><div class="rq-ing">Dal / Pulses</div><div class="rq-qty">¼ cup</div><div class="rq-note">Per meal</div></div>
+            <div class="rq-item"><div class="rq-ing">Vegetables</div><div class="rq-qty">¼ cup cooked</div><div class="rq-note">Variety of colors</div></div>
+            <div class="rq-item"><div class="rq-ing">Chicken / Fish</div><div class="rq-qty">30-40g (1 oz)</div><div class="rq-note">Well cooked</div></div>
+            <div class="rq-item"><div class="rq-ing">Egg</div><div class="rq-qty">1 whole egg</div><div class="rq-note">Daily</div></div>
+            <div class="rq-item"><div class="rq-ing">Milk / Curd</div><div class="rq-qty">300-400ml/day</div><div class="rq-note">Total dairy</div></div>
+            <div class="rq-item"><div class="rq-ing">Fruits</div><div class="rq-qty">½ cup</div><div class="rq-note">2-3 times/day</div></div>
+            <div class="rq-item"><div class="rq-ing">Healthy Snack</div><div class="rq-qty">½ cup</div><div class="rq-note">Makhana, fruit, roti</div></div>
+          </div>
+        </div>
+
+        <div class="rq-card">
+          <div class="rq-title">🏃 5–8 Years</div>
+          <div class="rq-age">Active growing age. Higher protein & calcium needs. 3 meals + 2 snacks.</div>
+          <div class="rq-grid">
+            <div class="rq-item"><div class="rq-ing">Rice / Roti</div><div class="rq-qty">1 cup / 2 rotis</div><div class="rq-note">Per meal</div></div>
+            <div class="rq-item"><div class="rq-ing">Dal / Protein</div><div class="rq-qty">½ cup</div><div class="rq-note">Per meal</div></div>
+            <div class="rq-item"><div class="rq-ing">Vegetables</div><div class="rq-qty">½ cup cooked</div><div class="rq-note">Fill half the plate!</div></div>
+            <div class="rq-item"><div class="rq-ing">Chicken / Fish</div><div class="rq-qty">60-75g (2 oz)</div><div class="rq-note">Per meal</div></div>
+            <div class="rq-item"><div class="rq-ing">Egg</div><div class="rq-qty">1-2 eggs</div><div class="rq-note">Daily</div></div>
+            <div class="rq-item"><div class="rq-ing">Milk / Dairy</div><div class="rq-qty">400-500ml/day</div><div class="rq-note">Calcium for bones</div></div>
+            <div class="rq-item"><div class="rq-ing">Fruits</div><div class="rq-qty">1 medium fruit</div><div class="rq-note">2-3 times/day</div></div>
+            <div class="rq-item"><div class="rq-ing">Nuts & Seeds</div><div class="rq-qty">1 small handful</div><div class="rq-note">Almonds, walnuts</div></div>
+          </div>
+        </div>
+
+        <div class="rq-card">
+          <div class="rq-title">💪 9–12 Years</div>
+          <div class="rq-age">Pre-teen growth spurt. Highest nutrient needs. 3 meals + 2-3 snacks.</div>
+          <div class="rq-grid">
+            <div class="rq-item"><div class="rq-ing">Rice / Roti</div><div class="rq-qty">1½ cup / 3 rotis</div><div class="rq-note">Per meal</div></div>
+            <div class="rq-item"><div class="rq-ing">Dal / Pulses</div><div class="rq-qty">¾ cup</div><div class="rq-note">High protein need</div></div>
+            <div class="rq-item"><div class="rq-ing">Vegetables</div><div class="rq-qty">¾ cup cooked</div><div class="rq-note">50% of plate</div></div>
+            <div class="rq-item"><div class="rq-ing">Chicken / Fish</div><div class="rq-qty">90-100g (3 oz)</div><div class="rq-note">Per meal</div></div>
+            <div class="rq-item"><div class="rq-ing">Egg</div><div class="rq-qty">2 eggs</div><div class="rq-note">Daily</div></div>
+            <div class="rq-item"><div class="rq-ing">Milk / Dairy</div><div class="rq-qty">500ml/day</div><div class="rq-note">Bone growth phase</div></div>
+            <div class="rq-item"><div class="rq-ing">Fruits</div><div class="rq-qty">1-2 fruits</div><div class="rq-note">3 times/day</div></div>
+            <div class="rq-item"><div class="rq-ing">Healthy Fats</div><div class="rq-qty">2 tsp oil/ghee</div><div class="rq-note">Per day total</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PLAN SETTINGS - MASTER ONLY -->
+      <div id="pg-plans" style="display:none">
+        <div class="master-banner">
+          <span style="font-size:24px">👑</span>
+          <div><strong>Master Admin Only</strong> — Changes here affect what customers see on the pricing page</div>
+        </div>
+        <div class="card">
+          <div class="card-title">💼 Edit Plan Pricing & Details <span class="mbadge">👑 MASTER</span></div>
+          <div id="planEditor"></div>
+          <button class="btn btn-coral" onclick="savePlans()">💾 Save All Plans</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📊 Master vs Admin Permissions <span class="mbadge">👑 MASTER</span></div>
+          <div style="overflow-x:auto">
+          <table class="diff-table">
+            <thead><tr><th>Feature</th><th>👑 Master Admin</th><th>🛡️ Admin</th></tr></thead>
+            <tbody>
+              <tr><td>View Dashboard</td><td class="yes">✅ Yes</td><td class="yes">✅ Yes</td></tr>
+              <tr><td>Add/Edit Customers</td><td class="yes">✅ Yes</td><td class="yes">✅ Yes</td></tr>
+              <tr><td>Activate Plans</td><td class="yes">✅ Yes</td><td class="yes">✅ Yes</td></tr>
+              <tr><td>Generate Codes</td><td class="yes">✅ Yes</td><td class="yes">✅ Yes</td></tr>
+              <tr><td>Create Coupons</td><td class="yes">✅ Yes</td><td class="yes">✅ Yes</td></tr>
+              <tr><td>Send Notifications</td><td class="yes">✅ Yes</td><td class="yes">✅ Yes</td></tr>
+              <tr><td>View Recipe Quantities</td><td class="yes">✅ Yes</td><td class="yes">✅ Yes</td></tr>
+              <tr><td><strong>Change Plan Prices</strong></td><td class="yes">✅ Yes</td><td class="no">❌ No</td></tr>
+              <tr><td><strong>Create Admin Accounts</strong></td><td class="yes">✅ Yes</td><td class="no">❌ No</td></tr>
+              <tr><td><strong>Delete Admin Accounts</strong></td><td class="yes">✅ Yes</td><td class="no">❌ No</td></tr>
+              <tr><td><strong>Change System Settings</strong></td><td class="yes">✅ Yes</td><td class="no">❌ No</td></tr>
+              <tr><td><strong>View Activity Logs</strong></td><td class="yes">✅ Yes</td><td class="no">❌ No</td></tr>
+              <tr><td><strong>Export All Data</strong></td><td class="yes">✅ Yes</td><td class="no">❌ No</td></tr>
+              <tr><td><strong>Clear All Data</strong></td><td class="yes">✅ Yes</td><td class="no">❌ No</td></tr>
+              <tr><td><strong>Reset Master Password</strong></td><td class="yes">✅ Yes</td><td class="no">❌ No</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ADMIN ACCOUNTS - MASTER ONLY -->
+      <div id="pg-admins" style="display:none">
+        <div class="master-banner">
+          <span style="font-size:24px">👑</span>
+          <div><strong>Master Admin Only</strong> — Create and manage staff admin accounts</div>
+        </div>
+        <div class="card">
+          <div class="card-title">➕ Create Admin Account <span class="mbadge">👑 MASTER</span></div>
+          <div class="fgrid">
+            <div class="fg"><div class="lbl">Username *</div><input class="inp" id="a-user" placeholder="staff1"/></div>
+            <div class="fg"><div class="lbl">Password *</div><input class="inp" type="password" id="a-pass" placeholder="Strong password"/></div>
+            <div class="fg"><div class="lbl">Full Name</div><input class="inp" id="a-name" placeholder="Riya Patel"/></div>
+            <div class="fg"><div class="lbl">Role</div>
+              <select class="inp" id="a-role">
+                <option value="admin">🛡️ Admin (limited access)</option>
+                <option value="master">👑 Master Admin (full access)</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-coral" onclick="addAdmin()">➕ Create Account</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🔑 Change My Password</div>
+          <div class="fgrid" style="max-width:500px">
+            <div class="fg"><div class="lbl">Current Password</div><input class="inp" type="password" id="pw-old"/></div>
+            <div class="fg"><div class="lbl">New Password</div><input class="inp" type="password" id="pw-new"/></div>
+            <div class="fg"><div class="lbl">Confirm New Password</div><input class="inp" type="password" id="pw-conf"/></div>
+          </div>
+          <button class="btn btn-teal" onclick="changePw()">🔑 Update My Password</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🛡️ All Admin Accounts <span class="mbadge">👑 MASTER</span></div>
+          <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Created</th><th>Actions</th></tr></thead>
+            <tbody id="adminsBody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- SETTINGS - MASTER ONLY -->
+      <div id="pg-settings" style="display:none">
+        <div class="master-banner">
+          <span style="font-size:24px">👑</span>
+          <div><strong>Master Admin Only</strong> — System-wide settings</div>
+        </div>
+        <div class="card" style="background:#FFF8F0;border-color:#FFD93D">
+          <div class="card-title">💳 Change UPI Payment ID <span class="mbadge">👑 MASTER</span></div>
+          <div style="font-size:13px;color:#666;margin-bottom:12px">This UPI ID will appear on the payment page for customers to send money.</div>
+          <div class="fgrid" style="max-width:500px">
+            <div class="fg">
+              <div class="lbl">Current UPI ID</div>
+              <div style="background:#f0fffe;border:2px solid #4ECDC4;border-radius:10px;padding:10px 14px;font-family:monospace;font-weight:900;color:#0F6E56;font-size:15px" id="currentUPI">7990878248@ybl</div>
+            </div>
+            <div class="fg">
+              <div class="lbl">New UPI ID *</div>
+              <input class="inp" id="new-upi" placeholder="e.g. newid@ybl or 9876543210@paytm"/>
+            </div>
+            <div class="fg">
+              <div class="lbl">Confirm New UPI ID *</div>
+              <input class="inp" id="confirm-upi" placeholder="Enter UPI ID again to confirm"/>
+            </div>
+          </div>
+          <button class="btn btn-coral" onclick="changeUPI()" style="margin-top:8px">💳 Update UPI ID</button>
+          <div style="font-size:11px;color:#888;margin-top:8px">⚠️ After changing, also update UPI ID in System Settings below and redeploy payment.html</div>
+        </div>
+          <div class="fgrid">
+            <div class="fg"><div class="lbl">Business Name</div><input class="inp" id="set-biz" value="Chef Nutri-Kid"/></div>
+            <div class="fg"><div class="lbl">Your WhatsApp Number</div><input class="inp" id="set-phone" value="7990878248"/></div>
+            <div class="fg"><div class="lbl">UPI ID</div><input class="inp" id="set-upi" value="7990878248@ybl"/></div>
+            <div class="fg"><div class="lbl">Website URL</div><input class="inp" id="set-url" value="https://chef-nutrikid.netlify.app"/></div>
+            <div class="fg"><div class="lbl">Remind Before Expiry (days)</div><input class="inp" type="number" id="set-remind" value="3"/></div>
+          </div>
+          <button class="btn btn-coral" onclick="saveSettings()">💾 Save Settings</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">👑 Reset Master Admin Credentials <span class="mbadge">👑 MASTER</span></div>
+          <div class="fgrid" style="max-width:420px">
+            <div class="fg"><div class="lbl">New Username</div><input class="inp" id="m-user" placeholder="new username"/></div>
+            <div class="fg"><div class="lbl">New Password</div><input class="inp" type="password" id="m-pass" placeholder="new password"/></div>
+          </div>
+          <button class="btn btn-gold" onclick="resetMaster()">👑 Update Master Credentials</button>
+          <div style="font-size:11px;color:#888;margin-top:6px">⚠️ You will be logged out after changing credentials</div>
+        </div>
+
+        <div class="card" style="border-color:#fee2e2">
+          <div class="card-title" style="color:#dc2626">⚠️ Danger Zone <span class="mbadge">👑 MASTER</span></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-red" onclick="exportData()">📤 Export Backup (JSON)</button>
+            <button class="btn btn-red" onclick="clearData()">🗑️ Clear ALL Data</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOGS - MASTER ONLY -->
+      <div id="pg-logs" style="display:none">
+        <div class="master-banner">
+          <span style="font-size:24px">👑</span>
+          <div><strong>Master Admin Only</strong> — Complete activity history</div>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 Activity Log <span class="mbadge">👑 MASTER</span>
+            <button class="btn btn-red" style="margin-left:auto" onclick="clearLogs()">🗑️ Clear Logs</button>
+          </div>
+          <div id="logsList"><div style="color:#aaa;font-size:13px">No activity logged yet.</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">✏️ Edit Customer</div>
+    <input type="hidden" id="edit-id"/>
+    <div class="fgrid">
+      <div class="fg"><div class="lbl">Parent Name</div><input class="inp" id="e-name"/></div>
+      <div class="fg"><div class="lbl">Child Name</div><input class="inp" id="e-child"/></div>
+      <div class="fg"><div class="lbl">Child Age</div>
+        <select class="inp" id="e-age">
+          <option>0-6 months</option><option>6-12 months</option><option>1-2 years</option>
+          <option>2-4 years</option><option>5-8 years</option><option>9-12 years</option>
+        </select>
+      </div>
+      <div class="fg"><div class="lbl">WhatsApp</div><input class="inp" id="e-phone"/></div>
+      <div class="fg"><div class="lbl">Email</div><input class="inp" type="email" id="e-email"/></div>
+      <div class="fg"><div class="lbl">Allergies</div><input class="inp" id="e-allergy"/></div>
+      <div class="fg"><div class="lbl">Plan</div>
+        <select class="inp" id="e-plan">
+          <option value="Starter">🌱 Starter</option>
+          <option value="Family">👨‍👩‍👧 Family</option>
+          <option value="Premium">⭐ Premium</option>
+        </select>
+      </div>
+      <div class="fg"><div class="lbl">Amount Paid</div><input class="inp" type="number" id="e-amount"/></div>
+      <div class="fg"><div class="lbl">Status</div>
+        <select class="inp" id="e-status">
+          <option value="pending">Pending</option>
+          <option value="active">Active</option>
+          <option value="expired">Expired</option>
+        </select>
+      </div>
+      <div class="fg"><div class="lbl">Expiry Date</div><input class="inp" type="date" id="e-expiry"/></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-coral" onclick="saveEdit()">💾 Save</button>
+      <button class="btn btn-gray" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════
+const S={
+  get:(k,d=[])=>{try{const v=localStorage.getItem('cnk_'+k);return v!==null?JSON.parse(v):d}catch(e){return d}},
+  set:(k,v)=>localStorage.setItem('cnk_'+k,JSON.stringify(v))
+};
+
+// DEFAULT DATA
+const DEF_ADMINS=[
+  {u:'master',p:'master@nutrikid2026',name:'Master Admin',role:'master',created:td()},
+  {u:'admin',p:'nutrikid2026',name:'Admin',role:'admin',created:td()}
+];
+const DEF_PLANS=[
+  {id:'starter',name:'Starter',emoji:'🌱',price:299,duration:7,desc:'Weekly meal plan PDF, WhatsApp delivery, 1 child, allergy customization'},
+  {id:'family',name:'Family',emoji:'👨‍👩‍👧',price:999,duration:30,desc:'4 weekly plans, up to 3 children, WhatsApp support, PDF export'},
+  {id:'premium',name:'Premium',emoji:'⭐',price:2499,duration:30,desc:'Unlimited children, custom plans, 2 video consultations, priority support'}
+];
+const DEF_SETTINGS={biz:'Chef Nutri-Kid',phone:'7990878248',upi:'7990878248@ybl',url:'https://chef-nutrikid.netlify.app',remind:3};
+
+if(!S.get('admins',null))S.set('admins',DEF_ADMINS);
+if(!S.get('plans',null))S.set('plans',DEF_PLANS);
+if(!S.get('settings',null))S.set('settings',DEF_SETTINGS);
+
+function td(){return new Date().toLocaleDateString('en-IN')}
+function iso(){return new Date().toISOString().split('T')[0]}
+function addDays(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().split('T')[0]}
+function dLeft(exp){if(!exp)return 999;return Math.ceil((new Date(exp)-new Date())/(864e5))}
+
+// ═══════════════════════════════════
+// AUTH
+// ═══════════════════════════════════
+let CU=null;
+
+function login(){
+  const u=document.getElementById('lu').value.trim();
+  const p=document.getElementById('lp').value.trim();
+  const admins=S.get('admins',DEF_ADMINS);
+  const found=admins.find(a=>a.u===u&&a.p===p);
+  if(found){
+    CU=found;
+    document.getElementById('loginWrap').classList.remove('show');
+    document.getElementById('layout').classList.add('show');
+    document.getElementById('topUser').textContent=found.name+' ('+found.role+')';
+    const chip=document.getElementById('roleChip');
+    chip.textContent=found.role==='master'?'👑 MASTER ADMIN':'🛡️ ADMIN';
+    chip.className='sb-role '+(found.role==='master'?'master':'admin');
+    // Show/hide master sections
+    const mEls=document.querySelectorAll('.m-only,#msec');
+    mEls.forEach(el=>el.style.display=found.role==='master'?'':'none');
+    addLog('Login',found.name+' logged in as '+found.role);
+    renderAll();
+    pg('dashboard');
+  } else {
+    document.getElementById('lerr').textContent='❌ Wrong username or password!';
+  }
+}
+
+function logout(){
+  if(CU)addLog('Logout',CU.name+' logged out');
+  CU=null;
+  document.getElementById('layout').classList.remove('show');
+  document.getElementById('loginWrap').classList.add('show');
+  document.getElementById('lu').value='';
+  document.getElementById('lp').value='';
+  document.getElementById('lerr').textContent='';
+}
+
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open')}
+
+// ═══════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════
+const PGS=['dashboard','customers','payments','codes','coupons','notify','recipes','plans','admins','settings','logs'];
+const PTITLES={dashboard:'📊 Dashboard',customers:'👥 Customers',payments:'💰 Payments',codes:'🔑 Activation Codes',coupons:'🎟️ Coupons',notify:'🔔 Send Notifications',recipes:'🍳 Recipe Quantities',plans:'💼 Plan & Pricing',admins:'🛡️ Admin Accounts',settings:'⚙️ System Settings',logs:'📋 Activity Logs'};
+const MASTER_PGS=['plans','admins','settings','logs'];
+
+function pg(name){
+  if(MASTER_PGS.includes(name)&&CU?.role!=='master'){notif('⛔ This section is for Master Admin only!','err');return;}
+  PGS.forEach(p=>{const el=document.getElementById('pg-'+p);if(el)el.style.display=p===name?'block':'none';});
+  document.querySelectorAll('.sb-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('pgTitle').textContent=PTITLES[name]||name;
+  if(name==='plans')renderPlanEditor();
+  if(name==='admins')renderAdmins();
+  if(name==='settings')loadSettings();
+  if(name==='logs')renderLogs();
+}
+
+// ═══════════════════════════════════
+// NOTIFY
+// ═══════════════════════════════════
+function notif(msg,type='ok'){
+  const el=document.getElementById('gnotif');
+  el.textContent=msg;el.className='notif show '+type;
+  setTimeout(()=>el.classList.remove('show'),4000);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ═══════════════════════════════════
+// CUSTOMERS
+// ═══════════════════════════════════
+function addCustomer(){
+  const name=document.getElementById('c-name').value.trim();
+  const phone=document.getElementById('c-phone').value.trim();
+  if(!name||!phone){notif('Please fill Parent Name and WhatsApp!','err');return;}
+  let amount=parseInt(document.getElementById('c-amount').value)||0;
+  const plan=document.getElementById('c-plan').value;
+  const cpCode=document.getElementById('c-coupon').value.trim().toUpperCase();
+  let disc=0;
+  if(cpCode){
+    const cps=S.get('coupons',[]);
+    const cp=cps.find(c=>c.code===cpCode&&c.active&&(c.plan==='all'||c.plan===plan));
+    if(cp){
+      disc=cp.type==='percent'?Math.round(amount*cp.val/100):Math.min(cp.val,amount);
+      cp.uses=(cp.uses||0)+1;
+      if(cp.max>0&&cp.uses>=cp.max)cp.active=false;
+      S.set('coupons',cps);
+    }
+  }
+  const plans=S.get('plans',DEF_PLANS);
+  const pd=plans.find(p=>p.name===plan);
+  const status=document.getElementById('c-status').value;
+  const c={
+    id:Date.now(),name,child:document.getElementById('c-child').value.trim(),
+    age:document.getElementById('c-age').value,
+    phone,email:document.getElementById('c-email').value.trim(),
+    allergy:document.getElementById('c-allergy').value.trim()||'None',
+    plan,amount,disc,final:amount-disc,coupon:cpCode,
+    status,code:'',expiry:status==='active'?addDays(pd?.duration||30):'',date:td()
+  };
+  if(status==='active'){c.code=mkCode(plan);saveCodeRec(c.code,plan,name);}
+  const cs=S.get('customers',[]);
+  cs.push(c);S.set('customers',cs);
+  addLog('Customer Added',name+' — '+plan+(disc>0?' (Coupon:'+cpCode+')':''));
+  ['c-name','c-child','c-phone','c-email','c-allergy','c-amount','c-coupon'].forEach(id=>document.getElementById(id).value='');
+  notif('✅ Customer added!'+(c.code?' Code: '+c.code:''));
+  renderAll();
+}
+
+function filterC(q){
+  document.querySelectorAll('#cBody tr').forEach(r=>{
+    r.style.display=r.textContent.toLowerCase().includes(q.toLowerCase())?'':'none';
+  });
+}
+
+function renderCustomers(){
+  const cs=S.get('customers',[]);
+  const tbody=document.getElementById('cBody');
+  if(!cs.length){tbody.innerHTML='<tr class="empty"><td colspan="10">No customers yet 😊</td></tr>';return;}
+  tbody.innerHTML=cs.map((c,i)=>{
+    const dl=dLeft(c.expiry);
+    const expStyle=dl<=3?'color:#dc2626;font-weight:800':dl<=7?'color:#d97706':'';
+    return`<tr>
+      <td>${i+1}</td>
+      <td><strong>${c.name}</strong><br/><span style="font-size:10px;color:#888">${c.date}</span></td>
+      <td>${c.child||'-'}<br/><span style="font-size:10px;color:#888">${c.age||''}</span></td>
+      <td><a href="https://wa.me/91${c.phone.replace(/\D/g,'')}" target="_blank" style="background:#25D366;color:#fff;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:800;text-decoration:none">📱${c.phone}</a></td>
+      <td>${c.plan}</td>
+      <td>₹${c.final||c.amount}${c.disc>0?'<br/><span style="font-size:10px;color:#888">-₹'+c.disc+'</span>':''}</td>
+      <td style="${expStyle}">${c.expiry?c.expiry+(dl<=7&&c.status==='active'?'<br/><span style="font-size:10px">('+dl+'d left)</span>':''):'-'}</td>
+      <td><span class="badge b-${c.status}">${c.status.toUpperCase()}</span></td>
+      <td>${c.code?'<code style="font-size:10px;background:#f0fffe;padding:2px 5px;border-radius:4px">'+c.code+'</code>':'-'}</td>
+      <td style="display:flex;gap:3px;flex-wrap:wrap">
+        ${c.status!=='active'?`<button class="btn btn-teal" onclick="activateC(${c.id})">✅</button>`:''}
+        ${c.status==='active'?`<button class="btn btn-red" onclick="expireC(${c.id})">⛔</button>`:''}
+        <button class="btn btn-gold" onclick="openEdit(${c.id})">✏️</button>
+        <button class="btn btn-red" onclick="delC(${c.id})">🗑️</button>
+        ${c.code?`<button class="btn btn-wa" onclick="sendWA(${c.id})">📲</button>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function activateC(id){
+  const cs=S.get('customers',[]);
+  const c=cs.find(x=>x.id===id);if(!c)return;
+  const plans=S.get('plans',DEF_PLANS);
+  const pd=plans.find(p=>p.name===c.plan);
+  c.code=mkCode(c.plan);c.status='active';
+  c.expiry=addDays(pd?.duration||30);
+  saveCodeRec(c.code,c.plan,c.name);
+  S.set('customers',cs);
+  addLog('Activated',c.name+' — '+c.plan+' — '+c.code);
+  notif('✅ Activated! Code: '+c.code);
+  sendWA(id);renderAll();
+}
+
+function sendWA(id){
+  const c=S.get('customers',[]).find(x=>x.id===id);if(!c||!c.code)return;
+  const st=S.get('settings',DEF_SETTINGS);
+  const msg=`🎉 Welcome to Chef Nutri-Kid, ${c.name}!\n\nYour ${c.plan} Plan is now ACTIVE! 🌟\n\nActivation Code: ${c.code}\n\nHow to use:\n1️⃣ Visit ${st.url}\n2️⃣ Click any locked feature\n3️⃣ Enter code: ${c.code}\n\nYour child's healthy journey starts TODAY! 💚🍎`;
+  window.open('https://wa.me/91'+c.phone.replace(/\D/g,'')+'?text='+encodeURIComponent(msg),'_blank');
+}
+
+function expireC(id){
+  const cs=S.get('customers',[]);
+  const c=cs.find(x=>x.id===id);
+  if(c){c.status='expired';S.set('customers',cs);addLog('Expired',c.name);notif('Plan expired.','info');renderAll();}
+}
+
+function delC(id){
+  if(!confirm('Delete this customer?'))return;
+  let cs=S.get('customers',[]);
+  const c=cs.find(x=>x.id===id);
+  cs=cs.filter(x=>x.id!==id);S.set('customers',cs);
+  addLog('Deleted',c?.name||id);notif('Customer deleted.','info');renderAll();
+}
+
+function openEdit(id){
+  const c=S.get('customers',[]).find(x=>x.id===id);if(!c)return;
+  document.getElementById('edit-id').value=id;
+  document.getElementById('e-name').value=c.name;
+  document.getElementById('e-child').value=c.child||'';
+  document.getElementById('e-age').value=c.age||'2-4 years';
+  document.getElementById('e-phone').value=c.phone;
+  document.getElementById('e-email').value=c.email||'';
+  document.getElementById('e-allergy').value=c.allergy||'';
+  document.getElementById('e-plan').value=c.plan;
+  document.getElementById('e-amount').value=c.amount;
+  document.getElementById('e-status').value=c.status;
+  document.getElementById('e-expiry').value=c.expiry||'';
+  document.getElementById('editModal').classList.add('open');
+}
+
+function saveEdit(){
+  const id=parseInt(document.getElementById('edit-id').value);
+  const cs=S.get('customers',[]);
+  const c=cs.find(x=>x.id===id);if(!c)return;
+  c.name=document.getElementById('e-name').value;
+  c.child=document.getElementById('e-child').value;
+  c.age=document.getElementById('e-age').value;
+  c.phone=document.getElementById('e-phone').value;
+  c.email=document.getElementById('e-email').value;
+  c.allergy=document.getElementById('e-allergy').value;
+  c.plan=document.getElementById('e-plan').value;
+  c.amount=parseInt(document.getElementById('e-amount').value)||0;
+  c.status=document.getElementById('e-status').value;
+  c.expiry=document.getElementById('e-expiry').value;
+  S.set('customers',cs);addLog('Updated',c.name);closeModal();
+  notif('✅ Customer updated!');renderAll();
+}
+
+function closeModal(){document.getElementById('editModal').classList.remove('open')}
+
+// ═══════════════════════════════════
+// PAYMENTS
+// ═══════════════════════════════════
+function renderPayments(){
+  const cs=S.get('customers',[]).filter(c=>c.amount>0);
+  const st=S.get('settings',DEF_SETTINGS);
+  document.getElementById('displayUPI').textContent=st.upi;
+  const tbody=document.getElementById('payBody');
+  if(!cs.length){tbody.innerHTML='<tr class="empty"><td colspan="8">No payments yet.</td></tr>';return;}
+  tbody.innerHTML=cs.map(c=>`<tr>
+    <td>${c.date}</td><td>${c.name}</td><td>${c.plan}</td>
+    <td>₹${c.amount}</td><td>${c.disc>0?'₹'+c.disc+' ('+c.coupon+')':'-'}</td>
+    <td>₹${c.final||c.amount}</td>
+    <td><span class="badge b-${c.status}">${c.status.toUpperCase()}</span></td>
+    <td>${c.status!=='active'?`<button class="btn btn-teal" onclick="activateC(${c.id});pg('payments')">✅ Activate</button>`:'✅ Done'}</td>
+  </tr>`).join('');
+}
+
+// ═══════════════════════════════════
+// CODES
+// ═══════════════════════════════════
+function mkCode(plan){return'CNK-'+plan.substring(0,3).toUpperCase()+'-'+Math.random().toString(36).substring(2,8).toUpperCase()}
+function saveCodeRec(code,plan,to){
+  const cs=S.get('codes',[]);
+  cs.push({code,plan,created:td(),status:'used',to});S.set('codes',cs);
+}
+
+function genCode(){
+  const plan=document.getElementById('gen-plan').value;
+  const assign=document.getElementById('gen-assign').value.trim()||'Unassigned';
+  const code=mkCode(plan);saveCodeRec(code,plan,assign);
+  document.getElementById('codeval').textContent=code;
+  document.getElementById('codebox').style.display='block';
+  addLog('Code Generated',code+' for '+assign);
+  notif('✅ Code: '+code);renderCodes();
+}
+
+function cpCode(){
+  navigator.clipboard.writeText(document.getElementById('codeval').textContent);
+  notif('📋 Code copied!');
+}
+
+function renderCodes(){
+  const cs=[...S.get('codes',[])].reverse();
+  const tbody=document.getElementById('codesBody');
+  if(!cs.length){tbody.innerHTML='<tr class="empty"><td colspan="6">No codes yet.</td></tr>';return;}
+  tbody.innerHTML=cs.map(c=>`<tr>
+    <td><code style="font-weight:800;color:#0F6E56;font-size:12px">${c.code}</code></td>
+    <td>${c.plan}</td><td>${c.created}</td>
+    <td><span class="badge b-${c.status}">${c.status.toUpperCase()}</span></td>
+    <td>${c.to}</td>
+    <td><button class="btn btn-red" onclick="delCode('${c.code}')">🗑️</button></td>
+  </tr>`).join('');
+}
+
+function delCode(code){
+  S.set('codes',S.get('codes',[]).filter(c=>c.code!==code));
+  notif('Code deleted.','info');renderCodes();
+}
+
+// ═══════════════════════════════════
+// COUPONS
+// ═══════════════════════════════════
+function addCoupon(){
+  const code=document.getElementById('cp-code').value.trim().toUpperCase();
+  const val=parseInt(document.getElementById('cp-val').value);
+  if(!code||!val){notif('Fill coupon code and value!','err');return;}
+  const cps=S.get('coupons',[]);
+  if(cps.find(c=>c.code===code)){notif('Code already exists!','err');return;}
+  cps.push({
+    code,type:document.getElementById('cp-type').value,val,
+    plan:document.getElementById('cp-plan').value,
+    max:parseInt(document.getElementById('cp-max').value)||0,
+    exp:document.getElementById('cp-exp').value,
+    desc:document.getElementById('cp-desc').value.trim(),
+    active:true,uses:0,created:td()
+  });
+  S.set('coupons',cps);addLog('Coupon Created',code);
+  ['cp-code','cp-val','cp-max','cp-exp','cp-desc'].forEach(id=>document.getElementById(id).value='');
+  notif('✅ Coupon '+code+' created!');renderCoupons();
+}
+
+function renderCoupons(){
+  const cps=S.get('coupons',[]);
+  const el=document.getElementById('couponList');
+  if(!cps.length){el.innerHTML='<div style="color:#aaa;font-size:13px">No coupons yet.</div>';return;}
+  el.innerHTML=cps.map(cp=>`
+    <div class="cpcard" style="${!cp.active?'opacity:.5':''}">
+      <div>
+        <div class="cpcode">${cp.code}</div>
+        <div style="font-size:11px;color:#555;margin-top:3px">
+          ${cp.type==='percent'?cp.val+'% off':'₹'+cp.val+' off'} • ${cp.plan==='all'?'All Plans':cp.plan} • Used: ${cp.uses||0}/${cp.max||'∞'}${cp.exp?' • Expires: '+cp.exp:''}
+        </div>
+        <div style="font-size:10px;color:#888">${cp.desc||''}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn ${cp.active?'btn-red':'btn-green'}" onclick="toggleCp('${cp.code}')">${cp.active?'⛔ Off':'✅ On'}</button>
+        <button class="btn btn-red" onclick="delCp('${cp.code}')">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+function toggleCp(code){const cps=S.get('coupons',[]);const cp=cps.find(c=>c.code===code);if(cp){cp.active=!cp.active;S.set('coupons',cps);renderCoupons();}}
+function delCp(code){S.set('coupons',S.get('coupons',[]).filter(c=>c.code!==code));notif('Coupon deleted.','info');renderCoupons();}
+
+// ═══════════════════════════════════
+// NOTIFICATIONS
+// ═══════════════════════════════════
+function toggleSinglePhone(){
+  document.getElementById('nt-single-wrap').style.display=document.getElementById('nt-to').value==='single'?'block':'none';
+}
+
+const TMPLS={
+  welcome:`🎉 Welcome to Chef Nutri-Kid, {name}!\n\nYour {plan} Plan is now ACTIVE! 🌟\n\nActivation Code: {code}\n\n1️⃣ Visit chef-nutrikid.netlify.app\n2️⃣ Click any locked feature\n3️⃣ Enter code: {code}\n\nYour child's healthy journey starts TODAY! 💚🍎`,
+  renewal:`🔄 Hello {name}!\n\nYour Chef Nutri-Kid {plan} expires on {expiry}.\n\nRenew now to keep your child's healthy meal plans going! 🥦❤️\n\n💳 chef-nutrikid.netlify.app/payment.html\n📱 UPI: 7990878248@ybl\n\nReply after payment — activated in minutes! 😊`,
+  expiring:`⚠️ Hello {name}!\n\nYour plan expires in 3 days! Don't break your child's healthy routine 🥦\n\nRenew today:\n💳 chef-nutrikid.netlify.app/payment.html`,
+  offer:`🎟️ Special Offer for {name}!\n\nGet 20% OFF on renewal!\nUse code: RENEW20\n\nValid till: {expiry}\n\n💳 chef-nutrikid.netlify.app/payment.html\n\n🍎 Chef Nutri-Kid`,
+  payment:`💰 Hello {name},\n\nYour {plan} payment is pending.\n\nPay now:\n💳 chef-nutrikid.netlify.app/payment.html\n📱 UPI: 7990878248@ybl`
+};
+
+function loadTmpl(){
+  const t=document.getElementById('nt-tmpl').value;
+  if(TMPLS[t])document.getElementById('nt-msg').value=TMPLS[t];
+}
+
+function switchNtab(name,btn){
+  document.querySelectorAll('[id^="nt-"]').forEach(el=>{if(el.classList.contains('tab-panel'))el.classList.remove('active')});
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('nt-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function sendNotif(){
+  const to=document.getElementById('nt-to').value;
+  const msg=document.getElementById('nt-msg').value;
+  if(!msg){notif('Please write a message!','err');return;}
+  const cs=S.get('customers',[]);
+  let targets=[];
+  if(to==='all')targets=cs.filter(c=>c.status==='active');
+  else if(to==='pending')targets=cs.filter(c=>c.status==='pending');
+  else if(to==='expiring'){const st=S.get('settings',DEF_SETTINGS);targets=cs.filter(c=>c.status==='active'&&dLeft(c.expiry)<=st.remind);}
+  else if(to==='single')targets=[{name:'Customer',plan:'',expiry:'',code:'',phone:document.getElementById('nt-phone').value}];
+  if(!targets.length){notif('No customers found for this filter.','info');return;}
+  targets.forEach((c,i)=>{
+    const m=msg.replace(/{name}/g,c.name||'Customer').replace(/{plan}/g,c.plan||'').replace(/{expiry}/g,c.expiry||'').replace(/{code}/g,c.code||'');
+    setTimeout(()=>window.open('https://wa.me/91'+(c.phone||'').replace(/\D/g,'')+'?text='+encodeURIComponent(m),'_blank'),i*800);
+  });
+  addLog('Notifications Sent','To '+targets.length+' customers via WhatsApp');
+  notif('📲 Opening WhatsApp for '+targets.length+' customers...');
+}
+
+// ═══════════════════════════════════
+// PLAN EDITOR (MASTER)
+// ═══════════════════════════════════
+function renderPlanEditor(){
+  const plans=S.get('plans',DEF_PLANS);
+  document.getElementById('planEditor').innerHTML=plans.map((p,i)=>`
+    <div class="pecard">
+      <div style="font-size:14px;font-weight:900;margin-bottom:10px">${p.emoji} ${p.name} Plan</div>
+      <div class="fgrid">
+        <div class="fg"><div class="lbl">Plan Name</div><input class="inp" id="pe-n-${i}" value="${p.name}"/></div>
+        <div class="fg"><div class="lbl">Price (₹)</div><input class="inp" type="number" id="pe-p-${i}" value="${p.price}"/></div>
+        <div class="fg"><div class="lbl">Duration (days)</div><input class="inp" type="number" id="pe-d-${i}" value="${p.duration}"/></div>
+        <div class="fg"><div class="lbl">Emoji</div><input class="inp" id="pe-e-${i}" value="${p.emoji}"/></div>
+        <div class="fg" style="grid-column:1/-1"><div class="lbl">Features Description</div><textarea class="inp" id="pe-f-${i}" rows="2">${p.desc}</textarea></div>
+      </div>
+    </div>`).join('');
+}
+
+function savePlans(){
+  const plans=S.get('plans',DEF_PLANS);
+  plans.forEach((p,i)=>{
+    p.name=document.getElementById('pe-n-'+i).value;
+    p.price=parseInt(document.getElementById('pe-p-'+i).value)||0;
+    p.duration=parseInt(document.getElementById('pe-d-'+i).value)||30;
+    p.emoji=document.getElementById('pe-e-'+i).value;
+    p.desc=document.getElementById('pe-f-'+i).value;
+  });
+  S.set('plans',plans);addLog('Plans Updated','Master updated pricing');
+  notif('✅ Plans saved! New prices are live.');
+}
+
+// ═══════════════════════════════════
+// ADMIN ACCOUNTS (MASTER)
+// ═══════════════════════════════════
+function addAdmin(){
+  const u=document.getElementById('a-user').value.trim();
+  const p=document.getElementById('a-pass').value.trim();
+  const name=document.getElementById('a-name').value.trim()||u;
+  const role=document.getElementById('a-role').value;
+  if(!u||!p){notif('Username and password required!','err');return;}
+  const admins=S.get('admins',DEF_ADMINS);
+  if(admins.find(a=>a.u===u)){notif('Username already exists!','err');return;}
+  admins.push({u,p,name,role,created:td()});
+  S.set('admins',admins);
+  ['a-user','a-pass','a-name'].forEach(id=>document.getElementById(id).value='');
+  addLog('Admin Created',name+' ('+role+')');
+  notif('✅ Admin account created!');renderAdmins();
+}
+
+function renderAdmins(){
+  const admins=S.get('admins',DEF_ADMINS);
+  document.getElementById('adminsBody').innerHTML=admins.map(a=>`<tr>
+    <td><strong>${a.u}</strong></td><td>${a.name}</td>
+    <td><span class="badge ${a.role==='master'?'b-master':'b-admin'}">${a.role.toUpperCase()}</span></td>
+    <td>${a.created}</td>
+    <td>${a.u!=='master'?`<button class="btn btn-red" onclick="delAdmin('${a.u}')">🗑️ Remove</button>`:'<span style="font-size:11px;color:#888">🔒 Protected</span>'}</td>
+  </tr>`).join('');
+}
+
+function delAdmin(u){
+  if(u==='master'){notif('Cannot delete master!','err');return;}
+  if(!confirm('Remove admin '+u+'?'))return;
+  S.set('admins',S.get('admins',DEF_ADMINS).filter(a=>a.u!==u));
+  addLog('Admin Removed',u);notif('Admin removed.','info');renderAdmins();
+}
+
+function changePw(){
+  const old=document.getElementById('pw-old').value;
+  const nw=document.getElementById('pw-new').value;
+  const cf=document.getElementById('pw-conf').value;
+  if(nw!==cf){notif('New passwords do not match!','err');return;}
+  if(!nw){notif('New password cannot be empty!','err');return;}
+  const admins=S.get('admins',DEF_ADMINS);
+  const me=admins.find(a=>a.u===CU?.u);
+  if(!me||me.p!==old){notif('Current password is wrong!','err');return;}
+  me.p=nw;CU.p=nw;S.set('admins',admins);
+  ['pw-old','pw-new','pw-conf'].forEach(id=>document.getElementById(id).value='');
+  addLog('Password Changed',CU.u);notif('✅ Password updated!');
+}
+
+// ═══════════════════════════════════
+// SETTINGS (MASTER)
+// ═══════════════════════════════════
+function changeUPI(){
+  const newUPI=document.getElementById('new-upi').value.trim();
+  const confUPI=document.getElementById('confirm-upi').value.trim();
+  if(!newUPI){notif('Please enter new UPI ID!','err');return;}
+  if(newUPI!==confUPI){notif('UPI IDs do not match!','err');return;}
+  if(!newUPI.includes('@')){notif('Invalid UPI ID! Must contain @ e.g. 9876543210@ybl','err');return;}
+  const st=S.get('settings',DEF_SETTINGS);st.upi=newUPI;S.set('settings',st);
+  document.getElementById('currentUPI').textContent=newUPI;
+  document.getElementById('new-upi').value='';document.getElementById('confirm-upi').value='';
+  addLog('UPI Changed','New UPI: '+newUPI);
+  notif('✅ UPI updated to: '+newUPI);
+}
+
+function loadSettings(){
+  const st=S.get('settings',DEF_SETTINGS);
+  document.getElementById('set-biz').value=st.biz;
+  document.getElementById('set-phone').value=st.phone;
+  document.getElementById('set-upi').value=st.upi;
+  document.getElementById('set-url').value=st.url;
+  document.getElementById('set-remind').value=st.remind;
+  // Update current UPI display
+  const cuEl=document.getElementById('currentUPI');
+  if(cuEl)cuEl.textContent=st.upi;
+}
+
+function saveSettings(){
+  S.set('settings',{
+    biz:document.getElementById('set-biz').value,
+    phone:document.getElementById('set-phone').value,
+    upi:document.getElementById('set-upi').value,
+    url:document.getElementById('set-url').value,
+    remind:parseInt(document.getElementById('set-remind').value)||3
+  });
+  addLog('Settings Saved','System settings updated');
+  notif('✅ Settings saved!');
+}
+
+function resetMaster(){
+  const nu=document.getElementById('m-user').value.trim();
+  const np=document.getElementById('m-pass').value.trim();
+  if(!nu||!np){notif('Both fields required!','err');return;}
+  if(!confirm('Update master credentials? You will be logged out.'))return;
+  const admins=S.get('admins',DEF_ADMINS);
+  const master=admins.find(a=>a.role==='master'&&a.u===CU?.u);
+  if(master){master.u=nu;master.p=np;}
+  S.set('admins',admins);
+  addLog('Master Credentials Reset','Username/password changed');
+  notif('✅ Master credentials updated! Logging out...');
+  setTimeout(logout,2000);
+}
+
+function exportData(){
+  const data={customers:S.get('customers',[]),codes:S.get('codes',[]),coupons:S.get('coupons',[]),plans:S.get('plans',DEF_PLANS),exported:new Date().toISOString()};
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  a.download='chef-nutri-kid-backup-'+iso()+'.json';a.click();
+  notif('✅ Data exported!');
+}
+
+function clearData(){
+  if(!confirm('DELETE ALL data? This cannot be undone!'))return;
+  if(!confirm('Are you absolutely sure?'))return;
+  ['customers','codes','coupons'].forEach(k=>S.set(k,[]));
+  addLog('Data Cleared','All data deleted by master');
+  notif('All data cleared.','info');renderAll();
+}
+
+// ═══════════════════════════════════
+// LOGS (MASTER)
+// ═══════════════════════════════════
+function addLog(action,detail){
+  const logs=S.get('logs',[]);
+  logs.unshift({time:new Date().toLocaleString('en-IN'),action,detail,by:CU?.u||'system'});
+  if(logs.length>300)logs.splice(300);
+  S.set('logs',logs);
+}
+
+function renderLogs(){
+  const logs=S.get('logs',[]);
+  const el=document.getElementById('logsList');
+  if(!logs.length){el.innerHTML='<div style="color:#aaa;font-size:13px">No logs yet.</div>';return;}
+  el.innerHTML=logs.map(l=>`<div class="logitem"><strong>${l.action}</strong> — ${l.detail}<div class="logtime">${l.time} • by ${l.by}</div></div>`).join('');
+}
+
+function clearLogs(){if(!confirm('Clear all logs?'))return;S.set('logs',[]);notif('Logs cleared.','info');renderLogs();}
+
+// ═══════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════
+function renderDashboard(){
+  const cs=S.get('customers',[]);
+  const cps=S.get('coupons',[]);
+  const st=S.get('settings',DEF_SETTINGS);
+  document.getElementById('s1').textContent=cs.length;
+  document.getElementById('s2').textContent=cs.filter(c=>c.status==='active').length;
+  document.getElementById('s3').textContent=cs.filter(c=>c.status==='pending').length;
+  document.getElementById('s4').textContent=cs.filter(c=>c.status==='expired').length;
+  document.getElementById('s5').textContent='₹'+cs.reduce((s,c)=>s+(parseInt(c.final||c.amount)||0),0).toLocaleString('en-IN');
+  document.getElementById('s6').textContent=cps.filter(c=>c.active).length;
+  // Expiring
+  const exp=cs.filter(c=>c.status==='active'&&dLeft(c.expiry)<=st.remind);
+  const eb=document.getElementById('expBody');
+  if(!exp.length){eb.innerHTML='<tr class="empty"><td colspan="6">🎉 No plans expiring soon!</td></tr>';}
+  else eb.innerHTML=exp.map(c=>`<tr>
+    <td><strong>${c.name}</strong></td><td>${c.child||'-'}</td><td>${c.plan}</td>
+    <td style="color:#dc2626;font-weight:800">${c.expiry}</td>
+    <td style="color:#dc2626;font-weight:800">${dLeft(c.expiry)} days</td>
+    <td><button class="btn btn-wa" onclick="sendRenewal(${c.id})">📲 Send Reminder</button></td>
+  </tr>`).join('');
+  // Recent logs
+  const logs=S.get('logs',[]).slice(0,5);
+  document.getElementById('recentLogs').innerHTML=logs.length?logs.map(l=>`<div class="logitem"><strong>${l.action}</strong> — ${l.detail}<div class="logtime">${l.time}</div></div>`).join(''):'<div style="color:#aaa;font-size:13px">No activity yet.</div>';
+}
+
+function sendRenewal(id){
+  const c=S.get('customers',[]).find(x=>x.id===id);if(!c)return;
+  const st=S.get('settings',DEF_SETTINGS);
+  const msg=`🔄 Hello ${c.name}!\n\nYour Chef Nutri-Kid ${c.plan} expires on ${c.expiry}.\n\nRenew now! 🥦❤️\n\n💳 ${st.url}/payment.html\n📱 UPI: ${st.upi}`;
+  window.open('https://wa.me/91'+c.phone.replace(/\D/g,'')+'?text='+encodeURIComponent(msg),'_blank');
+  addLog('Renewal Reminder',c.name);
+}
+
+// ═══════════════════════════════════
+// RENDER ALL
+// ═══════════════════════════════════
+function renderAll(){
+  renderDashboard();renderCustomers();renderPayments();
+  renderCodes();renderCoupons();
+}
+</script>
+</body>
+</html>

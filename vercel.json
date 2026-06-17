@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build && cp src/admin.html dist/admin.html && cp public/plans.html dist/plans.html && cp public/payment.html dist/payment.html && cp public/upi-qr.png dist/upi-qr.png",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index.js" },
+    { "source": "/((?!admin\\.html|plans\\.html|payment\\.html|upi-qr\\.png).*)", "destination": "/index.html" }
+  ]
+}
